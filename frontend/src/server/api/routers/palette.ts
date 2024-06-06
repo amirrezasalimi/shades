@@ -35,6 +35,32 @@ export const paletteRouter = createTRPCRouter({
     make: publicProcedure.input(z.object({
         prompt: z.string().min(5).max(1000),
     })).mutation(async ({ input, ctx }) => {
+        const ip = getFingerprint(ctx.req as unknown as Request);
+        // limits : 1 request per 10 minutes
+        let lastPalettes: PalettesResponse<Record<string, string>>[] = [];
+        try {
+            lastPalettes = await pb_admin.collection("palettes").getFullList({
+                limit: 10,
+                sort: "-created",
+                fields: "created",
+                filter: `ip = "${ip}"`,
+                page: 1,
+            });
+        }
+        catch (e) {
+            console.log(e);
+        }
+        const last = lastPalettes?.[0];
+        if (lastPalettes.length > 0 && last) {
+            const last_created = new Date(last.created).getTime();
+            const now = new Date().getTime();
+            const diff = now - last_created;
+            if (diff < 600000) {
+                const remainingMinutes = Math.ceil((600000 - diff) / 60000);
+                throw new Error(`You can generate your next palette in ${remainingMinutes} minutes`);
+            }
+        }
+
         const ai_prompt = makePrompt(input.prompt);
         const ai_res = await openAi.chat.completions.create({
             model: "anthropic/claude-3-opus",

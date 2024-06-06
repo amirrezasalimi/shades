@@ -34,8 +34,8 @@ const Home = () => {
           }),
         );
       })
-      .catch(() => {
-        toast("Failed to generate palette");
+      .catch((e:Error) => {
+        toast(e.message);
       });
   };
   return (
