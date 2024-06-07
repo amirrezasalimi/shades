@@ -13,7 +13,7 @@ import Link from "next/link";
 const Home = () => {
   const [prompt, setPrompt] = useState("");
   const recent = api.palette.recent.useQuery({
-    limit: 20,
+    limit: 100,
     page: 1,
   });
 
