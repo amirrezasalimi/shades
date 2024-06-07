@@ -52,7 +52,7 @@ const Home = () => {
             size="lg"
             fullWidth
             variant="bordered"
-            placeholder="a cyberpunk landing page"
+            placeholder="cyberpunk landing page"
             disabled={make.isPending}
             onKeyPress={(e) => {
               if (e.key === "Enter") {
