@@ -21,6 +21,7 @@ const Home = () => {
   const router = useRouter();
 
   const makePalette = async () => {
+    if (make.isPending) return;
     if (!prompt.trim()) {
       toast("Please enter a prompt");
       return;
@@ -34,7 +35,7 @@ const Home = () => {
           }),
         );
       })
-      .catch((e:Error) => {
+      .catch((e: Error) => {
         toast(e.message);
       });
   };
@@ -53,6 +54,11 @@ const Home = () => {
             variant="bordered"
             placeholder="a cyberpunk landing page"
             disabled={make.isPending}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                makePalette();
+              }
+            }}
           />
           <Button
             size="lg"
