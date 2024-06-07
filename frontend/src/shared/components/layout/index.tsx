@@ -23,7 +23,7 @@ const Layout = ({ children }: Props) => {
             </Link>
           )}
         </div>
-        <Link href={"https://x.com/amirsalimiiii"}>
+        <Link target="_blank" href={"https://x.com/amirsalimiiii"}>
           <FaXTwitter className="h-6 w-6 hover:opacity-80" />
         </Link>
       </div>
