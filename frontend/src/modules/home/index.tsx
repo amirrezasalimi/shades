@@ -41,11 +41,11 @@ const Home = () => {
   };
   return (
     <div className="flex w-full flex-col items-center">
-      <div className="flex w-1/2 flex-col items-center text-center">
-        <h2 className="text-3xl font-bold text-[#FF776B]">
+      <div className="flex w-full md:w-1/2 flex-col items-center text-center">
+        <h2 className="text-4xl md:text-3xl font-bold text-[#FF776B]">
           Generate Ai Color Palettes
         </h2>
-        <div className="mt-6 flex w-full gap-4">
+        <div className="mt-6 flex flex-col md:flex-row w-full gap-4">
           <Input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

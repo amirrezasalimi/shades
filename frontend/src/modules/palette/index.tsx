@@ -62,7 +62,7 @@ const Palette = ({
                     <FaArrowLeft size={24} />
                   </Button>
                 </Link>
-                <h2 className="bg-gradient-to-r from-[#363636] to-[#7d7d7d] bg-clip-text text-3xl font-bold text-transparent">
+                <h2 className="bg-gradient-to-r from-[#363636] to-[#7d7d7d] bg-clip-text text-lg md:text-3xl font-bold text-transparent">
                   {palette.data?.prompt}
                 </h2>
               </div>
@@ -106,11 +106,11 @@ const Palette = ({
                     className="flex flex-col gap-4 rounded-xl border bg-white p-4 shadow-sm"
                   >
                     <h2 className="text-xl font-medium">{name}</h2>
-                    <div className="flex gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-4">
                       {Object.entries(fullData?.[name] ?? {})
                         .reverse()
                         .map(
-                          ([key, value]: [string, string], index: number) => (
+                          ([key, value]: [string, string]) => (
                             <div
                               key={value}
                               style={{
@@ -119,7 +119,7 @@ const Palette = ({
                                 borderColor: colorContrast(value),
                               }}
                               onClick={() => copyClipboard(value)}
-                              className={`group flex h-16 w-1/12 cursor-pointer items-center justify-center rounded-lg border-2 p-4`}
+                              className={`group flex h-16 cursor-pointer items-center justify-center rounded-lg border-2 p-4`}
                             >
                               <div className="flex flex-col">
                                 <span className="text-medium font-medium opacity-70 group-hover:hidden">
