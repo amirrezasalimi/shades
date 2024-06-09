@@ -36,7 +36,11 @@ export const paletteRouter = createTRPCRouter({
         prompt: z.string().min(5).max(1000),
     })).mutation(async ({ input, ctx }) => {
         const ip = getFingerprint(ctx.req as unknown as Request);
-        // limits : 1 request per 10 minutes
+
+        if (!ip) {
+            throw new Error("Failed to get IP");
+        }
+        // rate limit
         let lastPalettes: PalettesResponse<Record<string, string>>[] = [];
         try {
             lastPalettes = await pb_admin.collection("palettes").getFullList({
@@ -48,30 +52,33 @@ export const paletteRouter = createTRPCRouter({
             });
         }
         catch (e) {
-            console.log(e);
+            console.error(e);
         }
         const last = lastPalettes?.[0];
-        if (lastPalettes.length > 0 && last) {
+        if (last) {
             const last_created = new Date(last.created).getTime();
             const now = new Date().getTime();
             const diff = now - last_created;
-            if (diff < 600000) {
-                const remainingMinutes = Math.ceil((600000 - diff) / 60000);
+            const every = 1000 * 60 * 5; // 5 minutes
+            if (diff < every) {
+                const remainingMinutes = Math.ceil((every - diff) / (1000 * 60));
                 throw new Error(`You can generate your next palette in ${remainingMinutes} minutes`);
             }
         }
 
         const ai_prompt = makePrompt(input.prompt);
         const ai_res = await openAi.chat.completions.create({
-            model: "anthropic/claude-3-opus",
+            model: env.AI_MODEL,
             messages: [
                 {
                     role: "user",
                     content: ai_prompt,
                 }
-            ]
+            ],
+            temperature: 0.5,
         });
         const res = ai_res.choices?.[0]?.message.content;
+
         if (!res) {
             throw new Error("Failed to generate palette");
         }
@@ -79,7 +86,7 @@ export const paletteRouter = createTRPCRouter({
         try {
             colors = JSON.parse(res);
         } catch (e) {
-            console.log(e, res);
+            console.error(e, res);
             throw new Error("Failed to parse palette");
         }
 
@@ -89,8 +96,11 @@ export const paletteRouter = createTRPCRouter({
                 data: colors,
                 prompt: input.prompt,
                 ai_prompt,
-                ip: getFingerprint(ctx.req as unknown as Request),
+                ip,
+                model_id: env.AI_MODEL,
+                usage: ai_res?.usage ?? {},
             } as PalettesRecord)
+
             return add_res.id;
         } catch (e) {
             throw new Error("Failed to save palette");
