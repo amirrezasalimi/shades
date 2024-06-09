@@ -163,6 +163,32 @@
                     "max": null,
                     "pattern": ""
                 }
+            },
+            {
+                "system": false,
+                "id": "7jjp9bxc",
+                "name": "model_id",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {
+                    "min": null,
+                    "max": null,
+                    "pattern": ""
+                }
+            },
+            {
+                "system": false,
+                "id": "ugam21wa",
+                "name": "usage",
+                "type": "json",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {
+                    "maxSize": 2000000
+                }
             }
         ],
         "indexes": [],

@@ -40,14 +40,16 @@ export enum PalettesReferralOptions {
 	"google" = "google",
 	"producthunt" = "producthunt",
 }
-export type PalettesRecord<Tdata = unknown, Tfull_data = unknown> = {
+export type PalettesRecord<Tdata = unknown, Tfull_data = unknown, Tusage = unknown> = {
 	ai_prompt?: string
 	data?: null | Tdata
 	fingerprint?: string
 	full_data?: null | Tfull_data
 	ip?: string
+	model_id?: string
 	prompt?: string
 	referral?: PalettesReferralOptions
+	usage?: null | Tusage
 }
 
 export type UsersRecord = {
@@ -56,7 +58,7 @@ export type UsersRecord = {
 }
 
 // Response types include system fields and match responses from the PocketBase API
-export type PalettesResponse<Tdata = unknown, Tfull_data = unknown, Texpand = unknown> = Required<PalettesRecord<Tdata, Tfull_data>> & BaseSystemFields<Texpand>
+export type PalettesResponse<Tdata = unknown, Tfull_data = unknown, Tusage = unknown, Texpand = unknown> = Required<PalettesRecord<Tdata, Tfull_data, Tusage>> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 
 // Types containing all Records and Responses, useful for creating typing helper functions
