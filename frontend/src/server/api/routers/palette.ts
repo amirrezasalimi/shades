@@ -34,6 +34,7 @@ Format the output strictly in JSON with no additional commentary or colors, like
 export const paletteRouter = createTRPCRouter({
     make: publicProcedure.input(z.object({
         prompt: z.string().min(5).max(1000),
+        referral: z.string().max(200).optional()
     })).mutation(async ({ input, ctx }) => {
         const ip = getFingerprint(ctx.req as unknown as Request);
 
@@ -99,6 +100,7 @@ export const paletteRouter = createTRPCRouter({
                 ip,
                 model_id: env.AI_MODEL,
                 usage: ai_res?.usage ?? {},
+                referral: input.referral
             } as PalettesRecord)
 
             return add_res.id;
