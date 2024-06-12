@@ -4,7 +4,7 @@ import { OpenAI } from 'openai'
 import { env } from "~/env";
 import { pb_admin } from "~/server/pocketbase";
 import type { PalettesResponse, PalettesRecord } from "~/server/pocketbase-schema";
-import generateShades from "~/shared/utils/color";
+import type { ListResult } from "pocketbase";
 
 
 const openAi = new OpenAI({
@@ -112,13 +112,15 @@ export const paletteRouter = createTRPCRouter({
         page: z.number().int().positive().default(1),
         limit: z.number().int().positive().default(10),
     })).query(async ({ input }) => {
-        const res = await pb_admin.collection("palettes").getFullList({
+        const res = await pb_admin.collection("palettes").getList(input.page, input.limit, {
             limit: input.limit,
             sort: "-created",
             fields: "id,prompt,created,data",
             page: input.page,
         });
-        return res as PalettesResponse<Record<string, string>>[];
+        return res as ListResult<PalettesResponse<
+            Record<string, string>
+        >>
     }),
     get: publicProcedure
         .input(z.object({
