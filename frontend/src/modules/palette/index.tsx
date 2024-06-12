@@ -9,7 +9,6 @@ import { TbCopy } from "react-icons/tb";
 import toast from "react-hot-toast";
 import { api } from "~/shared/utils/trpc/react";
 import { useMemo } from "react";
-import Head from "next/head";
 const Palette = ({
   params: { id },
 }: {
@@ -19,6 +18,7 @@ const Palette = ({
 }) => {
   const palette = api.palette.get.useQuery({ id });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const data = palette.data?.data ?? {};
 
   console.log("data", data);
@@ -42,7 +42,7 @@ const Palette = ({
   const prompt = palette.data?.prompt;
   useMemo(() => {
     if (prompt) {
-      document.title = `Shades - ${prompt}`
+      document.title = `Shades - ${prompt}`;
     }
   }, [prompt]);
   return (
@@ -62,7 +62,7 @@ const Palette = ({
                     <FaArrowLeft size={24} />
                   </Button>
                 </Link>
-                <h2 className="bg-gradient-to-r from-[#363636] to-[#7d7d7d] bg-clip-text text-lg md:text-3xl font-bold text-transparent">
+                <h2 className="bg-gradient-to-r from-[#363636] to-[#7d7d7d] bg-clip-text text-lg font-bold text-transparent md:text-3xl">
                   {palette.data?.prompt}
                 </h2>
               </div>
@@ -106,36 +106,33 @@ const Palette = ({
                     className="flex flex-col gap-4 rounded-xl border bg-white p-4 shadow-sm"
                   >
                     <h2 className="text-xl font-medium">{name}</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-4">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-11">
                       {Object.entries(fullData?.[name] ?? {})
                         .reverse()
-                        .map(
-                          ([key, value]: [string, string]) => (
-                            <div
-                              key={value}
-                              style={{
-                                backgroundColor: value,
-                                color: colorContrast(value),
-                                borderColor: colorContrast(value),
-                              }}
-                              onClick={() => copyClipboard(value)}
-                              className={`group flex h-16 cursor-pointer items-center justify-center rounded-lg border-2 p-4`}
-                            >
-                              <div className="flex flex-col">
-                                <span className="text-medium font-medium opacity-70 group-hover:hidden">
-                                  {key}
-                                </span>
-                                <span className="text-xs font-medium opacity-70 group-hover:hidden">
-                                  {value}
-                                </span>
-                              </div>
-                              <TbCopy
-                                size={24}
-                                className="opacity-0 group-hover:opacity-100"
-                              />
+                        .map(([key, value]: [string, string]) => (
+                          <div
+                            key={value}
+                            style={{
+                              backgroundColor: value,
+                              color: colorContrast(value),
+                            }}
+                            onClick={() => copyClipboard(value)}
+                            className={`group flex h-16 cursor-pointer items-center justify-center rounded-lg p-4`}
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-medium font-medium opacity-70 group-hover:hidden">
+                                {key}
+                              </span>
+                              <span className="text-xs font-medium opacity-70 group-hover:hidden">
+                                {value}
+                              </span>
                             </div>
-                          ),
-                        )}
+                            <TbCopy
+                              size={24}
+                              className="opacity-0 group-hover:opacity-100"
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
                 ))}

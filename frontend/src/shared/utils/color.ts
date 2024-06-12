@@ -1,34 +1,139 @@
-import Values from 'values.js'
+// credit: https://javisperez.github.io/tailwindcolorshades
+import colorNamer from "color-namer";
+import convert from "color-convert";
 
-function hexToRgb(hex: string): { r: number, g: number, b: number } {
-    const bigint = parseInt(hex.slice(1), 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return { r, g, b };
+export type Palette = {
+    name: string;
+    colors: Record<number, string>
+};
+
+const CMY_HUES = [180, 300, 60];
+const RGB_HUES = [360, 240, 120, 0];
+
+export function getTextColor(color: string): "#FFF" | "#333" {
+    // @ts-ignore
+    const rgbColor = convert.hex.rgb(color);
+
+    if (!rgbColor) {
+        return "#333";
+    }
+
+    const [r, g, b] = rgbColor;
+    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+    return luma < 120 ? "#FFF" : "#333";
 }
 
-function rgbToHex(r: number, g: number, b: number): string {
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+function hueShift(hues: Array<number>, hue: number, intensity: number) {
+    const closestHue = (hues.sort((a, b) => (Math.abs(a - hue) - Math.abs(b - hue)))[0]) ?? 0,
+        hueShift = closestHue - hue;
+    return Math.round(intensity * hueShift * 0.5);
 }
 
-export default function generateShades(hexColor: string): Record<string, string> {
-    const values = new Values(hexColor, "base", 500);
-    const shades = values.all(20).map((shade) => shade.hexString())
-    const shadesCodes = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
-    const shadesObj: Record<string, string> = {}
-    shades.forEach((shade, index) => {
-        if (shadesCodes[index]) {
-            shadesObj[shadesCodes?.[index] ?? ""] = shade;
+function lighten(hex: string, intensity: number): string {
+    if (!hex) {
+        return "";
+    }
+
+    const [h, s, v] = convert.hex.hsv(hex);
+    const hue = h + hueShift(CMY_HUES, h, intensity);
+    const saturation = s - Math.round(s * intensity);
+    const value = v + Math.round((100 - v) * intensity);
+
+    return `#${convert.hsv.hex([hue, saturation, value])}`;
+}
+
+function darken(hex: string, intensity: number): string {
+    if (!hex) {
+        return "";
+    }
+
+    const inverseIntensity = (1 - intensity);
+    const [h, s, v] = convert.hex.hsv(hex);
+    const hue = h + hueShift(RGB_HUES, h, inverseIntensity);
+    const saturation = s + Math.round((100 - s) * inverseIntensity);
+    const value = v - Math.round(v * inverseIntensity);
+
+    return `#${convert.hsv.hex([hue, saturation, value])}`;
+}
+
+export function isValidHexColorCode(str: string) {
+    return /^#([0-9A-Fa-f]{3}){1,2}$/.test(str);
+}
+
+export function getColorName(color: string): string {
+    const cn = colorNamer(`#${color}`.replace("##", "#")).ntc[0];
+    const name = cn?.name ?? "Unknown";
+    const sanitizedName = name
+        .replace(/['/]/gi, "")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+
+    return sanitizedName;
+}
+
+export function sixDigitsColorHex(hexColor: string) {
+    const hexValue = hexColor.replace('#', '')
+    return `#${(hexValue.length === 3 ? hexValue.replace(/(.)/g, '$1$1') : hexValue.padEnd(6, '0'))}`;
+}
+
+function makeShades(baseColor?: string): Palette | undefined {
+    if (!baseColor) {
+        return
+    }
+
+    const fullColorCode = sixDigitsColorHex(baseColor)
+
+    const name = getColorName(fullColorCode);
+
+    const response: Palette = {
+        name,
+        colors: {
+            500: fullColorCode
         }
-    })
-    return shadesObj;
+    };
+
+    const intensityMap: Record<number, number> = {
+        50: 0.95,
+        100: 0.9,
+        200: 0.75,
+        300: 0.6,
+        400: 0.3,
+        600: 0.9,
+        700: 0.75,
+        800: 0.6,
+        900: 0.45,
+        950: 0.29
+    };
+
+    [50, 100, 200, 300, 400].forEach(level => {
+        response.colors[level] = lighten(fullColorCode, intensityMap?.[level] ?? 1);
+    });
+
+    [600, 700, 800, 900, 950].forEach(level => {
+        response.colors[level] = darken(fullColorCode, intensityMap[level] ?? 1);
+    });
+
+    return response;
 }
 
+
+export default function generateShades(hexColor: string): Record<number, string> {
+    const shades = makeShades(hexColor);
+    return shades?.colors ?? {};
+}
+
+const hexToRgb = (hex: string) => {
+    const bigint = parseInt(hex.replace("#", ""), 16);
+    return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255,
+    };
+}
 export const colorContrast = (color: string): string => {
     // dark or light
     const { r, g, b } = hexToRgb(color);
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
     return brightness > 125 ? "#000000" : "#ffffff";
-
 }
