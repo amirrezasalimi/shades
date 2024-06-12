@@ -21,8 +21,6 @@ const Palette = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const data = palette.data?.data ?? {};
 
-  console.log("data", data);
-
   const fullData = useMemo(() => {
     const result: Record<string, Record<string, string>> = {};
     for (const key of baseColorsKeys) {
