@@ -14,7 +14,7 @@ function App() {
 
   return (
     <div className="homepage">
-      <div>
+      <div className="flex  justify-between">
         <a href="https://www.figma.com" target="_blank">
           <img src={figmaLogo} className="logo figma" alt="Figma logo" />
         </a>
