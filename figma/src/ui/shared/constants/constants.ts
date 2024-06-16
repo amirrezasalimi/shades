@@ -1,0 +1,1 @@
+export const TRPC_HOST="https://shades.toolstack.run";

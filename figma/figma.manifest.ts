@@ -8,4 +8,8 @@ export default {
   capabilities: [],
   enableProposedApi: false,
   editorType: ["figma"],
+  documentAccess: "dynamic-page",
+  networkAccess: {
+    allowedDomains: ["https://shades.toolstack.run/"],
+  },
 };
