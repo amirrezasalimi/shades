@@ -12,6 +12,7 @@ const makePrompt = (prompt: string) => {
 Please provide a color combination for :
 "${prompt}"
 each choosen color should be in shade of 500 only.
+and "description" should be a 1 paragraph description reason for colors combination and overall (under 50 words).
 Format the output strictly in JSON with no additional commentary or colors, like this,no extra talk or chat:
 {
 "primary": "hex color",
@@ -22,7 +23,8 @@ Format the output strictly in JSON with no additional commentary or colors, like
 "warning": "hex color",
 "info": "hex color",
 "background": "hex color",
-"text": "hex color"
+"text": "hex color",
+"description": "1 paragraph description of the palette"
 }
 `
 }

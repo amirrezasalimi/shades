@@ -10,8 +10,7 @@ import type { PalettesResponse } from "~/server/pocketbase-schema";
 import prettyMilliseconds from "pretty-ms";
 import aiCreatePalette from "~/shared/utils/ai-create-palette";
 import { env } from "~/env";
-import generateShades, { colorContrast, getColorName } from "~/shared/utils/color";
-import ColorNamer from "color-namer";
+import generateShades, { getColorName } from "~/shared/utils/color";
 
 export const figmaRouter = createTRPCRouter({
     checkUser: publicProcedure.input(z.object({

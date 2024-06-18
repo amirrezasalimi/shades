@@ -1,18 +1,15 @@
+import { Palette } from "@common/models/palette";
 import { LOGO_BASE64 } from "../constants/logo-base64";
-import { base64ToUint8Array } from "./base64";
+import { convertHexToRgbRange } from "@common/utils/color";
 
-type Palette = {
+interface Props {
+    id: string;
     title: string;
-    colors: {
-        [key: string]: {
-            name: string;
-            shades: {
-                [key: string]: string;
-            }
-        }
-    }
+    description: string;
+    palette: Palette;
 }
-const createPaletteFrame = async () => {
+
+const createPaletteFrame = async (props: Props) => {
     // Load FONTS
     async function loadFonts() {
         await Promise.all([
@@ -33,11 +30,12 @@ const createPaletteFrame = async () => {
     await loadFonts();
 
     const framePadding = 124;
-    const width = 2710;
-    const height = 1800;
+    const width = 2800;
+    const height = 2500;
 
-    const title = "Cyberpunk landing page";
-    const name = "Color Palette";
+    const title = props.title;
+    const name = `palette-${props.id}`;
+    const description = props.description;
     // remove if already exists
     const existingFrame = figma.currentPage.findChild((child) => child.name === name);
     if (existingFrame) {
@@ -45,9 +43,18 @@ const createPaletteFrame = async () => {
     }
 
     // get latest frame 
-    const latestFrame = figma.currentPage.children[figma.currentPage.children.length - 1];
-    const x = latestFrame.x + latestFrame.width + 100;
-    const y = latestFrame.y;
+    let x, y;
+    if (figma.currentPage.children.length > 0) {
+        const latestFrame = figma.currentPage.children[figma.currentPage.children.length - 1];
+        x = latestFrame.x + latestFrame.width + 100;
+        y = latestFrame.y;
+    } else {
+        // Default values when there are no frames
+        x = 0;
+        y = 0;
+    }
+
+
     const frame = figma.createFrame();
     frame.name = name
     frame.x = x;
@@ -60,6 +67,12 @@ const createPaletteFrame = async () => {
     frame.paddingTop = framePadding;
     frame.paddingBottom = framePadding;
     frame.itemSpacing = 78
+    // center items 
+    frame.primaryAxisAlignItems = "MIN";
+    // center content
+    frame.counterAxisAlignItems = "CENTER";
+
+
 
     // head
     const head = figma.createFrame();
@@ -71,7 +84,7 @@ const createPaletteFrame = async () => {
     head.counterAxisSizingMode = "AUTO";
     // auto constrain
     head.layoutAlign = "STRETCH";
-    head.resize(width - (framePadding * 2), 128);
+    head.resize(width - (framePadding * 2), 200);
 
     // left
     const headLeft = figma.createFrame();
@@ -93,8 +106,17 @@ const createPaletteFrame = async () => {
     // sub title
     const subTitleText = figma.createText();
     subTitleText.name = "Sub Title";
-    subTitleText.characters = "Color Palette";
+    subTitleText.characters = description;
     subTitleText.fontSize = 20;
+    // resize
+    subTitleText.resize(width - (framePadding * 2) - 250, 190);
+    // gray
+    subTitleText.fills = [{
+        type: "SOLID", color: {
+            r: 0.42, g: 0.45, b: 0.49
+        }
+    }];
+
     subTitleText.fontName = { family: "Inter", style: "Regular" };
     // set parent
     headLeft.appendChild(subTitleText);
@@ -218,9 +240,11 @@ const createPaletteFrame = async () => {
         box.appendChild(rect);
         rect.resize(200, 110);
         rect.name = "Color";
+
+        const rgb_color = convertHexToRgbRange(color);
         rect.fills = [{
             type: "SOLID", color: {
-                r: 0.5, g: 0.2, b: 0
+                r: rgb_color[0], g: rgb_color[1], b: rgb_color[2]
             }
         }];
         // bottom frame
@@ -319,6 +343,10 @@ const createPaletteFrame = async () => {
                 r: 0.09, g: 0.69, b: 0.41
             },
         }];
+        typeText.resize(120, 38);
+        // center
+        typeText.counterAxisAlignItems = "CENTER";
+
 
         // create type
         const _type = figma.createText();
@@ -351,7 +379,9 @@ const createPaletteFrame = async () => {
         // clip content
         colorFrame.clipsContent = false;
         // create color boxes
-        for (const [shade_code, color] of Object.entries(colors)) {
+        // sort from 950 to 50
+        const colorsEntries = Object.entries(colors).sort((a, b) => parseInt(b[0]) - parseInt(a[0]));
+        for (const [shade_code, color] of colorsEntries) {
             const colorBox = createColorBox(color, shade_code);
             colorFrame.appendChild(colorBox);
         }
@@ -359,33 +389,44 @@ const createPaletteFrame = async () => {
         return colorList;
     }
 
-    const colors = {
-        "Primary": {
-            "100": "#FFD700",
-            "200": "#FFC400",
-            "300": "#FFB200",
-            "400": "#FFA000",
-            "500": "#FF8C00",
-            "600": "#FF7A00",
-            "700": "#FF6A00",
-            "800": "#FF5A00",
-            "900": "#FF4A00"
-        },
-        "Secondary": {
-            "100": "#FFD700",
-            "200": "#FFC400",
-            "300": "#FFB200",
-            "400": "#FFA000",
-            "500": "#FF8C00",
-            "600": "#FF7A00",
-            "700": "#FF6A00",
-            "800": "#FF5A00",
-            "900": "#FF4A00"
-        }
+    // primary,sencondary,neutral,text,background : vertical
+    // success,error,warning,info : horizontal (another frame)
+
+    const baseColorFrame = figma.createFrame();
+    frame.appendChild(baseColorFrame);
+    baseColorFrame.name = "Base Colors";
+    baseColorFrame.layoutMode = "VERTICAL";
+    baseColorFrame.primaryAxisSizingMode = "AUTO";
+    baseColorFrame.counterAxisSizingMode = "AUTO";
+    baseColorFrame.itemSpacing = 48;
+    baseColorFrame.fills = [];
+    baseColorFrame.clipsContent = false;
+    const baseColorsKeys = ["primary", "secondary", "neutral", "text", "background"];
+    for (const key of baseColorsKeys) {
+        const colorObj = props.palette[key];
+        const colorList = createColorList(colorObj.name, key, colorObj.shades);
+        baseColorFrame.appendChild(colorList);
     }
-    // create color list
-    const colorList = createColorList("Brown", "Primary", colors.Primary);
-    frame.appendChild(colorList);
+    const alertColorsKeys = ["success", "error", "warning", "info"];
+    const alertColorFrame = figma.createFrame();
+    frame.appendChild(alertColorFrame);
+    alertColorFrame.name = "Alert Colors";
+    alertColorFrame.layoutMode = "HORIZONTAL";
+    // space between
+    alertColorFrame.primaryAxisAlignItems = "SPACE_BETWEEN";
+    alertColorFrame.primaryAxisSizingMode = "AUTO";
+    alertColorFrame.counterAxisSizingMode = "AUTO";
+    alertColorFrame.fills = [];
+    alertColorFrame.clipsContent = false;
+    for (const key of alertColorsKeys) {
+        const colorObj = props.palette[key];
+        const colorList = createColorList(colorObj.name, key, colorObj.shades);
+        alertColorFrame.appendChild(colorList);
+    }
+
+    // focus on frame
+    figma.viewport.scrollAndZoomIntoView([frame]);
+
 }
 
 export default createPaletteFrame;
