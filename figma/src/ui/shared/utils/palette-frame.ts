@@ -1,4 +1,4 @@
-import { Palette } from "@common/models/palette";
+import { ColorPalette } from "@common/models/palette";
 import { LOGO_BASE64 } from "../constants/logo-base64";
 import { convertHexToRgbRange } from "@common/utils/color";
 
@@ -6,7 +6,7 @@ interface Props {
     id: string;
     title: string;
     description: string;
-    palette: Palette;
+    palette: ColorPalette;
 }
 
 const createPaletteFrame = async (props: Props) => {

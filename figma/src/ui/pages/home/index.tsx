@@ -1,5 +1,6 @@
 import { NetworkMessages } from "@common/network/messages";
 import { useEffect } from "react";
+import Explorer from "./components/explorer";
 
 const Home = () => {
   useEffect(() => {
@@ -8,7 +9,7 @@ const Home = () => {
     NetworkMessages.CREATE_PALETTE.send({ palette: {} });
   }, []);
   return <div className="font-bold text-xl">
-      Home
+      <Explorer/>
   </div>;
 };
 

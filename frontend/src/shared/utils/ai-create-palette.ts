@@ -60,16 +60,22 @@ const aiCreatePalette = async (prompt: string) => {
     const ai_price = env.AI_PRICE_PER_M.split(",");
     const input_1m_price = parseFloat(ai_price[0] ?? "1");
     const output_1m_price = parseFloat(ai_price[1] ?? "1");
-    
+
     const input_cost = new Decimal(input_tokens).dividedBy(1000000).times(input_1m_price).toDecimalPlaces(8).toNumber();
     const output_cost = new Decimal(output_tokens).dividedBy(1000000).times(output_1m_price).toDecimalPlaces(8).toNumber();
     const total_cost = new Decimal(input_cost).plus(output_cost).toDecimalPlaces(8).toNumber();
-   
+
+    const description = colors?.description ?? "";
+    // remove the description from the colors object
+    if (colors?.description) {
+        delete colors.description;
+    }
     return {
         colors,
         ai_prompt,
         usage: ai_res?.usage ?? {},
-        cost: total_cost
+        cost: total_cost,
+        description,
     }
 }
 

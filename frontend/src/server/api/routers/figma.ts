@@ -100,7 +100,8 @@ export const figmaRouter = createTRPCRouter({
                 usage: res.usage,
                 referral: "figma",
                 figma_user: user_id,
-                cost: res.cost
+                cost: res.cost,
+                description: res.description,
             })
             return add_res.id;
         } catch (e) {
@@ -111,7 +112,9 @@ export const figmaRouter = createTRPCRouter({
         id: z.string(),
     })).query(async ({ input }) => {
         try {
-            const res: PalettesResponse<Record<string, string>> = (await pb_admin.collection("palettes").getOne(input.id));
+            const res: PalettesResponse<Record<string, string>> = (await pb_admin.collection("palettes").getOne(input.id, {
+                fields: "id,prompt,created,data,description"
+            }));
             const colors: Record<string, {
                 name: string,
                 hex: string,
@@ -128,7 +131,9 @@ export const figmaRouter = createTRPCRouter({
             }
             return {
                 ...res,
-                colors
+                colors: res.data,
+                fullColors: colors,
+                data: null
             }
         } catch (e) {
             throw new Error("Palette not found");
@@ -180,11 +185,17 @@ export const figmaRouter = createTRPCRouter({
                 sort: "-created",
                 fields: "id,prompt,created,data",
                 page: input.page,
-                filter: input.date_from ? `created > "${input.date_from}"` : undefined,
+                filter: input.date_from ? `created > "${input.date_from}"` : "",
             });
-            return res as ListResult<PalettesResponse<
+            const data = res as ListResult<PalettesResponse<
                 Record<string, string>
-            >>
+            >>;
+            data.items = data.items.map(item => ({
+                ...item,
+                colors: item.data,
+                data: null
+            }))
+            return data;
         }
         catch (e) {
             console.error(e);

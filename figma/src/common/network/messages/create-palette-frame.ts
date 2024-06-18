@@ -1,7 +1,7 @@
 import createPaletteFrame from "../../../ui/shared/utils/palette-frame";
 import * as Networker from "monorepo-networker";
 import { NetworkSide } from "../sides";
-import { Palette } from "@common/models/palette";
+import { ColorPalette } from "@common/models/palette";
 
 interface Payload {
     palette?: object
@@ -81,7 +81,7 @@ export class CreatePalette extends Networker.MessageType<Payload> {
                 "950": "#050D17"
             }
         };
-        const mockPalette: Palette = {
+        const mockPalette: ColorPalette = {
             primary: {
                 name: "dark blue",
                 hex: "#42a5f5",

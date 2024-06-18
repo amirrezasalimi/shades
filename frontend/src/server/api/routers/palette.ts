@@ -61,6 +61,7 @@ export const paletteRouter = createTRPCRouter({
                 usage: res.usage,
                 referral: input.referral,
                 cost: res.cost,
+                description: res.description,
             } as PalettesRecord)
             return add_res.id;
         } catch (e) {
