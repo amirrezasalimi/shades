@@ -5,5 +5,5 @@ export default interface PaletteFull {
     prompt: string;
     description: string;
     colors: Record<string, string>;
-    fullColors?: Record<string, ColorPalette>;
+    fullColors?: ColorPalette
 }

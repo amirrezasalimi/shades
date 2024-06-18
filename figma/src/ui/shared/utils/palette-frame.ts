@@ -31,7 +31,7 @@ const createPaletteFrame = async (props: Props) => {
 
     const framePadding = 124;
     const width = 2800;
-    const height = 2500;
+    const height = 2800;
 
     const title = props.title;
     const name = `palette-${props.id}`;
@@ -392,32 +392,40 @@ const createPaletteFrame = async (props: Props) => {
     // primary,sencondary,neutral,text,background : vertical
     // success,error,warning,info : horizontal (another frame)
 
-    const baseColorFrame = figma.createFrame();
-    frame.appendChild(baseColorFrame);
-    baseColorFrame.name = "Base Colors";
-    baseColorFrame.layoutMode = "VERTICAL";
-    baseColorFrame.primaryAxisSizingMode = "AUTO";
-    baseColorFrame.counterAxisSizingMode = "AUTO";
-    baseColorFrame.itemSpacing = 48;
-    baseColorFrame.fills = [];
-    baseColorFrame.clipsContent = false;
+    const colorsFrame = figma.createFrame();
+    frame.appendChild(colorsFrame);
+    colorsFrame.name = "Base Colors";
+    colorsFrame.layoutMode = "VERTICAL";
+    colorsFrame.primaryAxisSizingMode = "AUTO";
+    colorsFrame.counterAxisSizingMode = "FIXED";
+    // fill height
+    colorsFrame.layoutAlign = "STRETCH";
+    colorsFrame.itemSpacing = 48;
+    colorsFrame.fills = [];
+    colorsFrame.clipsContent = false;
     const baseColorsKeys = ["primary", "secondary", "neutral", "text", "background"];
     for (const key of baseColorsKeys) {
         const colorObj = props.palette[key];
         const colorList = createColorList(colorObj.name, key, colorObj.shades);
-        baseColorFrame.appendChild(colorList);
+        colorsFrame.appendChild(colorList);
     }
     const alertColorsKeys = ["success", "error", "warning", "info"];
     const alertColorFrame = figma.createFrame();
-    frame.appendChild(alertColorFrame);
+    colorsFrame.appendChild(alertColorFrame);
     alertColorFrame.name = "Alert Colors";
     alertColorFrame.layoutMode = "HORIZONTAL";
     // space between
-    alertColorFrame.primaryAxisAlignItems = "SPACE_BETWEEN";
-    alertColorFrame.primaryAxisSizingMode = "AUTO";
-    alertColorFrame.counterAxisSizingMode = "AUTO";
+    alertColorFrame.counterAxisSizingMode="FIXED";
+    alertColorFrame.layoutAlign = "STRETCH";
+    alertColorFrame.primaryAxisSizingMode = "FIXED";
     alertColorFrame.fills = [];
     alertColorFrame.clipsContent = false;
+    alertColorFrame.itemSpacing = 32;
+    alertColorFrame.counterAxisSpacing = 48;    
+    alertColorFrame.layoutWrap="WRAP"
+    // fill container
+
+
     for (const key of alertColorsKeys) {
         const colorObj = props.palette[key];
         const colorList = createColorList(colorObj.name, key, colorObj.shades);

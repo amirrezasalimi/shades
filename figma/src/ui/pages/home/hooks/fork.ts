@@ -1,18 +1,22 @@
 import PaletteFull from "@common/models/palette-full";
+import { NetworkMessages } from "@common/network/messages";
 import { api } from "@ui/shared/utils/trpc-client";
 import { useState } from "react";
 
 const useFork = () => {
     const [forkingId, setForkingId] = useState<string | null>(null);
 
-    const forkToFigma = (id: string) => {
+    const forkToFigma = async (id: string) => {
         try {
-            const fullPalette = api.figma.getPalette.query({
+            const fullPalette = await api.figma.getPalette.query({
                 id
             }) as unknown as PaletteFull;
-            console.log(fullPalette);
+            
+            NetworkMessages.CREATE_PALETTE.send({ 
+                palette: fullPalette,
+             });
         } catch (error) {
-
+            console.error("Failed to fork palette", error);
         }
     }
     return {

@@ -11,6 +11,7 @@ import prettyMilliseconds from "pretty-ms";
 import aiCreatePalette from "~/shared/utils/ai-create-palette";
 import { env } from "~/env";
 import generateShades, { getColorName } from "~/shared/utils/color";
+import { error } from "console";
 
 export const figmaRouter = createTRPCRouter({
     checkUser: publicProcedure.input(z.object({
@@ -120,15 +121,28 @@ export const figmaRouter = createTRPCRouter({
                 hex: string,
                 shades: Record<number, string>
             }> = {};
-            for (const key in res.data) {
-                const hex = res.data[key]!;
-                const shades = generateShades(hex);
+
+            const data = res.data;
+            // remove description
+            if (data?.description) {
+                delete data.description;
+            }
+            const alertColors = ["success", "warning", "error", "info"];
+            for (const key in data) {
+                const hex = data[key]!;
+                let shades = generateShades(hex);
+                // if alert color , only pick 3 shades
+                if (alertColors.includes(key)) {
+                    const simpleShades=[200, 500,800];
+                    shades = Object.fromEntries(Object.entries(shades).filter(([k]) => simpleShades.includes(parseInt(k))));
+                }
                 colors[key] = {
                     name: getColorName(hex),
                     hex,
                     shades
                 }
             }
+
             return {
                 ...res,
                 colors: res.data,
@@ -136,6 +150,7 @@ export const figmaRouter = createTRPCRouter({
                 data: null
             }
         } catch (e) {
+            error(e);
             throw new Error("Palette not found");
         }
     }),
