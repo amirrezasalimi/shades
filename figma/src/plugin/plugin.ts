@@ -22,8 +22,6 @@ async function bootstrap() {
   }
 
   console.log("Bootstrapped @", Networker.Side.current.getName());
-
-  NetworkMessages.HELLO_UI.send({ text: "Hey there, UI!" });
 }
 
 bootstrap();

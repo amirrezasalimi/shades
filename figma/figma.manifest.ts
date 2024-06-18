@@ -9,7 +9,9 @@ export default {
   enableProposedApi: false,
   editorType: ["figma"],
   documentAccess: "dynamic-page",
+  permissions: ["currentuser"],
   networkAccess: {
     allowedDomains: ["https://shades.toolstack.run/"],
+    devAllowedDomains: ["http://localhost:3000/"],
   },
 };

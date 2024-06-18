@@ -346,7 +346,7 @@ const createPaletteFrame = async () => {
         colorFrame.layoutMode = "HORIZONTAL";
         colorFrame.primaryAxisSizingMode = "AUTO";
         colorFrame.counterAxisSizingMode = "AUTO";
-        colorFrame.itemSpacing = 16;
+        colorFrame.itemSpacing = 32;
         colorFrame.fills = [];
         // clip content
         colorFrame.clipsContent = false;

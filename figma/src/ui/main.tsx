@@ -6,7 +6,6 @@ import ReactDOM from "react-dom/client";
 async function bootstrap() {
   initializeNetwork(NetworkSide.UI);
 
-  // NetworkMessages.HELLO_PLUGIN.send({ text: "Hey there, Figma!" });
 
   const App = (await import("./app")).default;
 
