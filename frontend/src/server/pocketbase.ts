@@ -15,6 +15,7 @@ const initPbAdmin = async () => {
   if (pb_admin.authStore.isValid) {
     const auth_res = await pb_admin.admins.authRefresh();
     if (auth_res.token) {
+      // console.log("Still Valid Token");
       return auth_res.token;
     }
   }
