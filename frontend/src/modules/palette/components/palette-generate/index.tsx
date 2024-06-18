@@ -12,7 +12,7 @@ interface PaletteGenerateProps {
 
 const PaletteGenerate: React.FC<PaletteGenerateProps> = ({ fullData }) => {
   return (
-    <div className="mt-12 flex flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-medium">Base Colors</h2>
         <div className="flex flex-col gap-4">

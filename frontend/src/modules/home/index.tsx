@@ -87,7 +87,7 @@ const Home = () => {
             onClick={makePalette}
             isLoading={make.isPending}
           >
-            Make!
+            {!make.isPending && <>Make!</>}
           </Button>
         </div>
       </div>
