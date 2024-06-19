@@ -10,7 +10,7 @@ import GeneratePalette from "./components/generate";
 import { Toaster, toast } from "react-hot-toast";
 
 const Home = () => {
-  const [activeTab, setActiveTab] = useState("explore");
+  const [activeTab, setActiveTab] = useState("generate");
   const notify = () =>
     toast.custom(() => (
       <div className="flex items-center space-x-3 bg-[#F3F3F3] border border-[#E9E9E9] p-3 rounded-2xl backdrop-blur-lg bg-opacity-15">
@@ -45,11 +45,11 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div className="flex items-center bg-[#E9E9E9] h-12 rounded-2xl mt-5 p-1">
+        <div className="flex items-center bg-[#E9E9E9] h-12 rounded-2xl mt-5 p-1 relative z-10">
           <div
             className={clsx(
               "w-1/2 flex items-center justify-center rounded-2xl h-full transition-colors cursor-pointer",
-              activeTab === "generate" && "bg-white text-primary"
+              activeTab === "generate" && "bg-white text-primary shadow-sm"
             )}
             onClick={() => setActiveTab("generate")}
           >
@@ -58,7 +58,7 @@ const Home = () => {
           <div
             className={clsx(
               "w-1/2 flex items-center justify-center rounded-2xl h-full transition-colors cursor-pointer",
-              activeTab === "explore" && "bg-white text-primary"
+              activeTab === "explore" && "bg-white text-primary shadow-sm"
             )}
             onClick={() => setActiveTab("explore")}
           >
