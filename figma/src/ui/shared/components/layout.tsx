@@ -8,7 +8,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="w-screen h-screen">
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
-      <Toaster />
+      <Toaster position="bottom-center" />
     </div>
   );
 };
