@@ -1,7 +1,5 @@
 const GeneratePalette = () => {
-    return <div>
-
-    </div>
+  return <div>generate</div>;
 };
 
 export default GeneratePalette;

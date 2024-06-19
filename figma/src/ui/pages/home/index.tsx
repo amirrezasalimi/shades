@@ -1,12 +1,75 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Explorer from "./components/explorer";
 import useView from "./hooks/view";
+import logo from "@ui/assets/shades.png";
+import Link from "@ui/assets/link.svg";
+import CheckmarkIcon from "@ui/assets/check-circle.svg";
+import chatQuestion from "@ui/assets/chat-question.svg";
+import { clsx } from "clsx";
+import GeneratePalette from "./components/generate";
+import { Toaster, toast } from "react-hot-toast";
 
 const Home = () => {
+  const [activeTab, setActiveTab] = useState("explore");
+  const notify = () =>
+    toast.custom(() => (
+      <div className="flex items-center space-x-3 bg-[#F3F3F3] border border-[#E9E9E9] p-3 rounded-2xl backdrop-blur-lg bg-opacity-15">
+        <img width={18} src={CheckmarkIcon} alt="check icon" />
+        <div className="text-[#4C4C4C]">Imported to Figma</div>
+      </div>
+    ));
+
   useView();
-  return <div className="font-bold text-xl">
-      <Explorer/>
-  </div>;
+  return (
+    <div className="">
+      <Toaster />
+      <div className="m-6">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="font-normal text-gray-700 text-[16px]">
+              Welcome To
+            </span>
+            <div className="flex items-center pt-1">
+              <img onClick={notify} className="w-24" src={logo} alt="logo" />
+              <div className="text-gray-500 pl-2 text-[16px] font-light">
+                /Figma plugin
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+              <img width={22} src={Link} alt="" />
+            </div>
+            <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+              <img width={22} src={chatQuestion} alt="" />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center bg-[#E9E9E9] h-12 rounded-2xl mt-5 p-1">
+          <div
+            className={clsx(
+              "w-1/2 flex items-center justify-center rounded-2xl h-full transition-colors cursor-pointer",
+              activeTab === "generate" && "bg-white text-primary"
+            )}
+            onClick={() => setActiveTab("generate")}
+          >
+            Generate Palette
+          </div>
+          <div
+            className={clsx(
+              "w-1/2 flex items-center justify-center rounded-2xl h-full transition-colors cursor-pointer",
+              activeTab === "explore" && "bg-white text-primary"
+            )}
+            onClick={() => setActiveTab("explore")}
+          >
+            Explore
+          </div>
+        </div>
+      </div>
+      {activeTab === "explore" && <Explorer />}
+      {activeTab === "generate" && <GeneratePalette />}
+    </div>
+  );
 };
 
 export default Home;
