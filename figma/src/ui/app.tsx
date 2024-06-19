@@ -6,9 +6,7 @@ import Auth from "./shared/components/auth";
 function App() {
   return (
     <Layout>
-      <Auth>
         <Home />
-      </Auth>
     </Layout>
   );
 }
