@@ -21,9 +21,8 @@ const Home = () => {
 
   useView();
   return (
-    <div className="">
-      <Toaster />
-      <div className="m-6">
+    <div className="w-full h-full">
+      <div className="p-6 pb-2 sticky top-0 bg-white">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <span className="font-normal text-gray-700 text-[16px]">
