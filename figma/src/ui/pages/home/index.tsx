@@ -1,24 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Explorer from "./components/explorer";
 import useView from "./hooks/view";
 import logo from "@ui/assets/shades.png";
 import Link from "@ui/assets/link.svg";
-import CheckmarkIcon from "@ui/assets/check-circle.svg";
 import chatQuestion from "@ui/assets/chat-question.svg";
 import { clsx } from "clsx";
 import GeneratePalette from "./components/generate";
-import { Toaster, toast } from "react-hot-toast";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("explore");
-  const notify = () =>
-    toast.custom(() => (
-      <div className="flex items-center space-x-3 bg-[#F3F3F3] border border-[#E9E9E9] p-3 rounded-2xl backdrop-blur-lg bg-opacity-15">
-        <img width={18} src={CheckmarkIcon} alt="check icon" />
-        <div className="text-[#4C4C4C]">Imported to Figma</div>
-      </div>
-    ));
-
   useView();
   return (
     <div className="w-full h-full">
@@ -29,7 +19,7 @@ const Home = () => {
               Welcome To
             </span>
             <div className="flex items-center pt-1">
-              <img onClick={notify} className="w-24" src={logo} alt="logo" />
+              <img className="w-24" src={logo} alt="logo" />
               <div className="text-gray-500 pl-2 text-[16px] font-light">
                 /Figma plugin
               </div>
