@@ -3,7 +3,7 @@ import Explorer from "./components/explorer";
 import useView from "./hooks/view";
 import logo from "@ui/assets/shades.png";
 import Link from "@ui/assets/link.svg";
-import chatQuestion from "@ui/assets/chat-question.svg";
+import discord from "@ui/assets/discord.svg";
 import { clsx } from "clsx";
 import GeneratePalette from "./components/generate";
 
@@ -26,12 +26,16 @@ const Home = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
-              <img width={22} src={Link} alt="" />
-            </div>
-            <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
-              <img width={22} src={chatQuestion} alt="" />
-            </div>
+            <a href="https://shades.toolstack.run" target="_blank">
+              <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+                <img width={22} src={Link} alt="" />
+              </div>
+            </a>
+            <a href="https://discord.gg/Gzep8WsF3y" target="_blank">
+              <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+                <img width={22} src={discord} alt="" />
+              </div>
+            </a>
           </div>
         </div>
         <div className="flex items-center bg-[#E9E9E9] h-12 rounded-2xl mt-5 p-1">
