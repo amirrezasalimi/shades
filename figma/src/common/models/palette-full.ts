@@ -6,4 +6,5 @@ export default interface PaletteFull {
     description: string;
     colors: Record<string, string>;
     fullColors?: ColorPalette
+    fork_count: number;
 }

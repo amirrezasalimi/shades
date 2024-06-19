@@ -1,11 +1,11 @@
 import ListResponse from "@common/models/list-response";
-import { ColorPalette } from "@common/models/palette";
 import PaletteFull from "@common/models/palette-full";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@ui/shared/utils/trpc-client";
 import { useEffect, useState } from "react";
 import useFork from "../../hooks/fork";
 import clsx from "clsx";
+import { useInView } from "react-intersection-observer";
 
 const Explorer = () => {
   const fork = useFork();
@@ -13,25 +13,41 @@ const Explorer = () => {
   const [page, setPage] = useState(1);
   const [palettes, setPalettes] = useState<PaletteFull[]>([]);
 
-  const data = useQuery<ListResponse<PaletteFull>>({
-    queryKey: ["palettes"],
+  const recent = useQuery<ListResponse<PaletteFull>>({
+    queryKey: ["recent-palettes", page],
     queryFn: async () => {
       return (await api.figma.recentPalettes.query({
         page,
       })) as unknown as ListResponse<PaletteFull>;
     },
   });
-  useEffect(() => {
-    if (data.data) {
-      setPalettes((prev) => [...prev, ...data.data.items]);
-    }
-  }, [data.data]);
+  const data = recent.data;
 
+  useEffect(() => {
+    if (data) {
+      setPalettes((prev) => [...prev, ...data.items]);
+    }
+  }, [data]);
+
+  const canLoadMore = data?.page !== recent.data?.totalPages;
+  const next = async () => {
+    if (recent.isLoading || !canLoadMore) return;
+    const nextPage = (recent.data?.page ?? 1) + 1;
+    console.log("nextPage", nextPage);
+    setPage(nextPage);
+  };
+
+  const { ref, inView, entry } = useInView({
+    delay: 100,
+  });
+  useEffect(() => {
+    next();
+  }, [inView]);
   const baseColors = ["primary", "secondary", "neutral", "background", "text"];
 
   return (
     <div className="flex flex-col divide-y">
-      {data.isLoading && <div>Loading...</div>}
+      {recent.isLoading && <div>Loading...</div>}
       {palettes.map((palette) => {
         return (
           <div
@@ -63,8 +79,9 @@ const Explorer = () => {
           </div>
         );
       })}
+      <span ref={ref} className="w-full h-2 bg-transparent" />
       {/* fetching */}
-      {data.isFetching && <div>Fetching...</div>}
+      {page > 1 && recent.isFetching && <div>Fetching...</div>}
     </div>
   );
 };

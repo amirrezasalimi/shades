@@ -11,7 +11,7 @@ import prettyMilliseconds from "pretty-ms";
 import aiCreatePalette from "~/shared/utils/ai-create-palette";
 import { env } from "~/env";
 import generateShades, { getColorName } from "~/shared/utils/color";
-import { error } from "console";
+import { error, log } from "console";
 
 export const figmaRouter = createTRPCRouter({
     checkUser: publicProcedure.input(z.object({
@@ -133,7 +133,7 @@ export const figmaRouter = createTRPCRouter({
                 let shades = generateShades(hex);
                 // if alert color , only pick 3 shades
                 if (alertColors.includes(key)) {
-                    const simpleShades=[200, 500,800];
+                    const simpleShades = [200, 500, 800];
                     shades = Object.fromEntries(Object.entries(shades).filter(([k]) => simpleShades.includes(parseInt(k))));
                 }
                 colors[key] = {
@@ -195,22 +195,33 @@ export const figmaRouter = createTRPCRouter({
         date_from: z.string().optional(),
     })).query(async ({ input }) => {
         try {
-            const res = await pb_admin.collection("palettes").getList(input.page, input.limit, {
+            const res = await pb_admin.collection("figma_recents_extra").getList(input.page, input.limit, {
                 limit: input.limit,
                 sort: "-created",
-                fields: "id,prompt,created,data",
+                expand: "palette",
+                fields: "id,expand.palette,fork_count",
                 page: input.page,
                 filter: input.date_from ? `created > "${input.date_from}"` : "",
             });
-            const data = res as ListResult<PalettesResponse<
-                Record<string, string>
-            >>;
-            data.items = data.items.map(item => ({
-                ...item,
-                colors: item.data,
+            const data = res as unknown as ListResult<{
+                fork_count: number,
+                expand: {
+                    palette: PalettesResponse<Record<string, string>>
+                }
+            }>
+            const items = data.items.map(item => ({
+                ...item.expand.palette,
+                fork_count: item.fork_count,
+                colors: item.expand.palette?.data,
                 data: null
             }))
-            return data;
+            return {
+                items,
+                totalItems: data.totalItems,
+                totalPages: data.totalPages,
+                page: data.page,
+                perPage: data.perPage,
+            }
         }
         catch (e) {
             console.error(e);
@@ -237,7 +248,7 @@ export const figmaRouter = createTRPCRouter({
                     limit: 2,
                     sort: "-created",
                     fields: "created",
-                    filter: `user = "${user_id}"`,
+                    filter: `user = "${user_id}" && palette = "${input.palette_id}"`,
                     page: 1,
                 });
             }
@@ -299,7 +310,7 @@ export const figmaRouter = createTRPCRouter({
             catch (e) {
                 console.error(e);
             }
-            const delay_ms = ms("2m");
+            const delay_ms = ms("5m");
             const last = lastRecord?.[0];
             if (last) {
                 const last_created = new Date(last.created).getTime();
