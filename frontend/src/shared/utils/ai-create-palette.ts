@@ -1,11 +1,8 @@
 import OpenAI from "openai";
-import { env } from "~/env";
 import Decimal from "decimal.js";
+import Config from "./pb/config";
+import { CONFIG_KEYS } from "../constants/config-keys";
 
-const openAi = new OpenAI({
-    apiKey: env.OPENAI_API_KEY,
-    baseURL: env.OPENAI_API_BASE_URL
-});
 
 const makePrompt = (prompt: string) => {
     return `You are an expert UI/UX designer with a deep understanding of color theory and the ability to create stunning color palettes.
@@ -30,9 +27,29 @@ Format the output strictly in JSON with no additional commentary or colors, like
 }
 
 const aiCreatePalette = async (prompt: string) => {
+    let ai_model: {
+        endpoint: string,
+        key: string,
+        name: string,
+        per_1m: string // ex: 1.5,2
+    } | null;
+    try {
+        const ai_config = (await Config.get(CONFIG_KEYS.AI_MODEL)) as string
+        ai_model = JSON.parse(ai_config);
+        if (!ai_model) {
+            throw "Ai Service Unavailable"
+        }
+    } catch (e) {
+        throw "Ai Service Unavailable"
+    }
+    const openAi = new OpenAI({
+        apiKey: ai_model.key,
+        baseURL: ai_model.endpoint
+    });
+
     const ai_prompt = makePrompt(prompt);
     const ai_res = await openAi.chat.completions.create({
-        model: env.AI_MODEL,
+        model: ai_model.name,
         messages: [
             {
                 role: "user",
@@ -57,7 +74,7 @@ const aiCreatePalette = async (prompt: string) => {
     const input_tokens = ai_res?.usage?.total_tokens ?? 0;
     const output_tokens = ai_res?.usage?.completion_tokens ?? 0;
     // Todo: make it dynamic
-    const ai_price = env.AI_PRICE_PER_M.split(",");
+    const ai_price = ai_model.per_1m.split(",");
     const input_1m_price = parseFloat(ai_price[0] ?? "1");
     const output_1m_price = parseFloat(ai_price[1] ?? "1");
 
@@ -76,6 +93,7 @@ const aiCreatePalette = async (prompt: string) => {
         usage: ai_res?.usage ?? {},
         cost: total_cost,
         description,
+        ai_model
     }
 }
 

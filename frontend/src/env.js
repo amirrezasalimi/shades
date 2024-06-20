@@ -9,10 +9,7 @@ export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
     OPENAI_API_BASE_URL: z.string(),
-    OPENAI_API_KEY: z.string(),
-    AI_MODEL: z.string(),
     POCKETBASE_ADMIN_TOKEN: z.string().optional(),
-    AI_PRICE_PER_M: z.string()
   },
 
   /**
@@ -32,9 +29,6 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_POCKETBASE_HOST: process.env.NEXT_PUBLIC_POCKETBASE_HOST,
     OPENAI_API_BASE_URL: process.env.OPENAI_API_BASE_URL,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    AI_MODEL: process.env.AI_MODEL,
-    AI_PRICE_PER_M: process.env.AI_PRICE_PER_M,
     POCKETBASE_ADMIN_TOKEN: process.env.POCKETBASE_ADMIN_TOKEN,
   },
   /**

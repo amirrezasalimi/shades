@@ -97,7 +97,7 @@ export const figmaRouter = createTRPCRouter({
                 prompt: input.prompt,
                 ai_prompt: res.ai_prompt,
                 ip,
-                model_id: env.AI_MODEL,
+                model_id: res.ai_model.name,
                 usage: res.usage,
                 referral: "figma",
                 figma_user: user_id,
