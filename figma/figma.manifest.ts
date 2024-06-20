@@ -12,6 +12,6 @@ export default {
   permissions: ["currentuser"],
   networkAccess: {
     allowedDomains: ["https://shades.toolstack.run/"],
-    devAllowedDomains: ["http://localhost:3000/"],
+    devAllowedDomains: ["http://localhost:3000/","https://shades.toolstack.run/"],
   },
 };
