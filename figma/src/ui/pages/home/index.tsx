@@ -9,13 +9,6 @@ import GeneratePalette from "./components/generate";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("generate");
-  // const notify = () =>
-  //   toast.custom(() => (
-  //     <div className="flex items-center space-x-3 bg-[#F3F3F3] border border-[#E9E9E9] p-3 rounded-2xl backdrop-blur-lg bg-opacity-15">
-  //       <img width={18} src={CheckmarkIcon} alt="check icon" />
-  //       <div className="text-[#4C4C4C]">Imported to Figma</div>
-  //     </div>
-  //   ));
   useView();
   return (
     <div className="w-full h-full pt-40">
