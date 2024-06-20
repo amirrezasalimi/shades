@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Explorer from "./components/explorer";
 import useView from "./hooks/view";
 import logo from "@ui/assets/shades.png";
 import Link from "@ui/assets/link.svg";
-import CheckmarkIcon from "@ui/assets/check-circle.svg";
-import chatQuestion from "@ui/assets/chat-question.svg";
+import discord from "@ui/assets/discord.svg";
 import { clsx } from "clsx";
 import GeneratePalette from "./components/generate";
-import { Toaster, toast } from "react-hot-toast";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("generate");
@@ -18,31 +16,33 @@ const Home = () => {
         <div className="text-[#4C4C4C]">Imported to Figma</div>
       </div>
     ));
-
   useView();
   return (
-    <div className="">
-      <Toaster />
-      <div className="m-6">
+    <div className="w-full h-full">
+      <div className="p-6 pb-2 sticky top-0 bg-white">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <span className="font-normal text-gray-700 text-[16px]">
               Welcome To
             </span>
             <div className="flex items-center pt-1">
-              <img onClick={notify} className="w-24" src={logo} alt="logo" />
+              <img className="w-24" src={logo} alt="logo" />
               <div className="text-gray-500 pl-2 text-[16px] font-light">
                 /Figma plugin
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
-              <img width={22} src={Link} alt="" />
-            </div>
-            <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
-              <img width={22} src={chatQuestion} alt="" />
-            </div>
+            <a href="https://shades.toolstack.run" target="_blank">
+              <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+                <img width={22} src={Link} alt="" />
+              </div>
+            </a>
+            <a href="https://discord.gg/Gzep8WsF3y" target="_blank">
+              <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+                <img width={22} src={discord} alt="" />
+              </div>
+            </a>
           </div>
         </div>
         <div className="flex items-center bg-[#E9E9E9] h-12 rounded-2xl mt-5 p-1 relative z-10">

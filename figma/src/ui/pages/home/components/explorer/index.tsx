@@ -6,10 +6,50 @@ import { useEffect, useState } from "react";
 import useFork from "../../hooks/fork";
 import { useInView } from "react-intersection-observer";
 import arrowImport from "@ui/assets/arrow-import.svg";
+import clsx from "clsx";
 
-const Explorer = () => {
+const Item = ({
+  id,
+  title,
+  fork_count,
+  colors,
+}: {
+  id: string;
+  title: string;
+  fork_count: number;
+  colors: string[];
+}) => {
   const fork = useFork();
 
+  return (
+    <div
+      className="hover:bg-[#F3F3F3]"
+      onClick={() => {
+        fork.forkToFigma(id);
+      }}
+    >
+      <div className="flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer mx-6">
+        <div className="flex flex-col space-y-1">
+          <p title={title} className="text-[13px] max-w-36 truncate">
+            {title}
+          </p>
+          <div className="flex items-center text-[#999999] space-x-1">
+            <img width={12} src={arrowImport} />
+            <span className="text-xs">{fork_count}</span>
+          </div>
+        </div>
+        <div className="rounded-xl overflow-hidden h-10 flex items-center">
+          {colors.map((color, index) => {
+            return (
+              <div className="w-9 h-full" style={{ backgroundColor: color }} />
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+const Explorer = () => {
   const [page, setPage] = useState(1);
   const [palettes, setPalettes] = useState<PaletteFull[]>([]);
 
@@ -37,7 +77,7 @@ const Explorer = () => {
     setPage(nextPage);
   };
 
-  const { ref, inView, entry } = useInView({
+  const { ref, inView } = useInView({
     delay: 100,
   });
   useEffect(() => {
@@ -46,68 +86,24 @@ const Explorer = () => {
   const baseColors = ["primary", "secondary", "neutral", "background", "text"];
 
   return (
-    <div className="flex flex-col mt-5">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(() => (
-        <div className="hover:bg-[#F3F3F3]">
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer mx-6">
-            <div className="flex flex-col space-y-1">
-              <p
-                title="cyberpunk landing page cyberpunk landing page"
-                className="text-[13px] max-w-36 truncate"
-              >
-                cyberpunk landing page cyberpunk landing page
-              </p>
-              <div className="flex items-center text-[#999999] space-x-1">
-                <img width={12} src={arrowImport} />
-                <span className="text-xs">798</span>
-              </div>
-            </div>
-            <div className="rounded-xl overflow-hidden h-10 flex items-center">
-              <div className="w-9 bg-fuchsia-200 h-full"></div>
-              <div className="w-9 bg-fuchsia-300 h-full"></div>
-              <div className="w-9 bg-fuchsia-400 h-full"></div>
-              <div className="w-9 bg-fuchsia-500 h-full"></div>
-              <div className="w-9 bg-fuchsia-600 h-full"></div>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* {recent.isLoading && <div>Loading...</div>}
+    <div className="flex flex-col">
+      {recent.isLoading && <div>Loading...</div>}
       {palettes.map((palette) => {
+        const colors = baseColors.map((color) => palette.colors[color]);
         return (
-          <div
-            key={palette.id}
-            className={clsx(
-              "flex items-center h-[88px]",
-              "cursor-pointer",
-              fork.forkingId === palette.id && "bg-gray-100"
-            )}
-            onClick={() => fork.forkToFigma(palette.id)}
-          >
-            <div className="w-1/2">
-              <h2 className="text-md font-medium text-gray-800">
-                {palette.prompt}
-              </h2>
-            </div>
-            <div className="w-1/2 h-full flex items-center justify-center">
-              <div className="w-full flex rounded-lg overflow-hidden h-2/4">
-                {baseColors.map((color) => {
-                  return (
-                    <div
-                      style={{ backgroundColor: palette.colors[color] }}
-                      className="w-1/5 h-full"
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          <Item
+            id={palette.id}
+            title={palette.prompt}
+            fork_count={palette.fork_count}
+            colors={colors}
+          />
         );
       })}
-      <span ref={ref} className="w-full h-2 bg-transparent" /> */}
+      <span ref={ref} className="w-full h-2 bg-transparent" />
       {/* fetching */}
-      {/* {page > 1 && recent.isFetching && <div>Fetching...</div>} */}
+      {page > 1 && recent.isFetching && (
+        <div className="mx-6 py-2">Loading...</div>
+      )}
     </div>
   );
 };

@@ -56,6 +56,11 @@ const createPaletteFrame = async (props: Props) => {
 
 
     const frame = figma.createFrame();
+    frame.fills = [{
+        type: "SOLID", color: {
+            r: 0.95, g: 0.95, b: 0.95
+        }
+    }];
     frame.name = name
     frame.x = x;
     frame.y = y;
@@ -76,6 +81,7 @@ const createPaletteFrame = async (props: Props) => {
 
     // head
     const head = figma.createFrame();
+    head.fills = [];
     head.name = "Head";
     head.layoutMode = "HORIZONTAL";
     // jsutify  between
@@ -93,6 +99,7 @@ const createPaletteFrame = async (props: Props) => {
     headLeft.primaryAxisSizingMode = "AUTO";
     headLeft.counterAxisSizingMode = "AUTO";
     headLeft.itemSpacing = 24;
+    headLeft.fills = [];
 
     // create title
     const titleText = figma.createText();
@@ -125,6 +132,7 @@ const createPaletteFrame = async (props: Props) => {
 
     // right
     const headRight = figma.createFrame();
+    headRight.fills = [];
     headRight.name = "Head Right";
     headRight.layoutMode = "VERTICAL";
     headRight.primaryAxisSizingMode = "AUTO";
@@ -136,6 +144,7 @@ const createPaletteFrame = async (props: Props) => {
 
     // copyright
     const copyrightFrame = figma.createFrame();
+    copyrightFrame.fills = [];
     copyrightFrame.name = "Copyright";
     copyrightFrame.layoutMode = "HORIZONTAL";
     copyrightFrame.itemSpacing = 8;
@@ -208,9 +217,11 @@ const createPaletteFrame = async (props: Props) => {
     // focus on frame
     figma.viewport.scrollAndZoomIntoView([frame]);
 
-    const createColorBox = (color: string, shade_code: string) => {
+    const createColorBox = (type: string, color: string, shade_code: string) => {
+        const rgb_color = convertHexToRgbRange(color);
+
         const box = figma.createFrame();
-        box.name = `${color} ${shade_code}`;
+        box.name = `${type}/${shade_code} ${color}`
         box.resize(200, 190);
         box.layoutMode = "VERTICAL";
         box.primaryAxisSizingMode = "AUTO";
@@ -218,22 +229,27 @@ const createPaletteFrame = async (props: Props) => {
         box.fills = [];
         // rounded
         box.cornerRadius = 12;
-        // shadow
-        box.effects = [{
-            type: "DROP_SHADOW",
-            color: { r: 0.06, g: 0.09, b: 0.15, a: 0.08 },
-            offset: { x: 0, y: 12 },
-            radius: 16,
-            spread: -4,
-            blendMode: "NORMAL",
-            visible: true,
-        }];
-        // border
-        box.strokes = [{
+        /*         // shadow
+                box.effects = [{
+                    type: "DROP_SHADOW",
+                    color: { r: 0.06, g: 0.09, b: 0.15, a: 0.08 },
+                    offset: { x: 0, y: 12 },
+                    radius: 16,
+                    spread: -4,
+                    blendMode: "NORMAL",
+                    visible: true,
+                }]; */
+        box.fills = [{
             type: "SOLID", color: {
-                r: 0.83, g: 0.88, b: 0.94
-            },
+                r: rgb_color[0], g: rgb_color[1], b: rgb_color[2]
+            }
         }];
+        /*      // border
+                box.strokes = [{
+                    type: "SOLID", color: {
+                        r: 0.83, g: 0.88, b: 0.94
+                    },
+                }]; */
 
         // rect
         const rect = figma.createRectangle();
@@ -241,7 +257,6 @@ const createPaletteFrame = async (props: Props) => {
         rect.resize(200, 110);
         rect.name = "Color";
 
-        const rgb_color = convertHexToRgbRange(color);
         rect.fills = [{
             type: "SOLID", color: {
                 r: rgb_color[0], g: rgb_color[1], b: rgb_color[2]
@@ -309,6 +324,7 @@ const createPaletteFrame = async (props: Props) => {
         head.primaryAxisSizingMode = "AUTO";
         head.counterAxisSizingMode = "AUTO";
         head.itemSpacing = 16;
+        head.fills = [];
         // items center
         head.counterAxisAlignItems = "CENTER";
         // create name
@@ -360,7 +376,6 @@ const createPaletteFrame = async (props: Props) => {
             }
         }];
 
-
         typeText.appendChild(_type);
 
 
@@ -382,7 +397,7 @@ const createPaletteFrame = async (props: Props) => {
         // sort from 950 to 50
         const colorsEntries = Object.entries(colors).sort((a, b) => parseInt(b[0]) - parseInt(a[0]));
         for (const [shade_code, color] of colorsEntries) {
-            const colorBox = createColorBox(color, shade_code);
+            const colorBox = createColorBox(type, color, shade_code);
             colorFrame.appendChild(colorBox);
         }
         colorList.appendChild(colorFrame);
@@ -415,14 +430,14 @@ const createPaletteFrame = async (props: Props) => {
     alertColorFrame.name = "Alert Colors";
     alertColorFrame.layoutMode = "HORIZONTAL";
     // space between
-    alertColorFrame.counterAxisSizingMode="FIXED";
+    alertColorFrame.counterAxisSizingMode = "FIXED";
     alertColorFrame.layoutAlign = "STRETCH";
     alertColorFrame.primaryAxisSizingMode = "FIXED";
     alertColorFrame.fills = [];
     alertColorFrame.clipsContent = false;
     alertColorFrame.itemSpacing = 32;
-    alertColorFrame.counterAxisSpacing = 48;    
-    alertColorFrame.layoutWrap="WRAP"
+    alertColorFrame.counterAxisSpacing = 48;
+    alertColorFrame.layoutWrap = "WRAP"
     // fill container
 
 
