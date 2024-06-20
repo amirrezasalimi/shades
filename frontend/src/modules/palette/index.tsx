@@ -7,6 +7,8 @@ import { LINKS } from "~/shared/constants/links";
 import generateShades from "~/shared/utils/color";
 import { api } from "~/shared/utils/trpc/react";
 import { useMemo } from "react";
+import figmaIcon from "public/figma.svg";
+import arrowUp from "public/arrow-up-right.svg";
 
 import {
   NewUser,
@@ -18,6 +20,7 @@ import {
   PaletteGenerate,
   TopSeller,
 } from "./components";
+import Image from "next/image";
 
 const Palette = ({
   params: { id },
@@ -72,8 +75,17 @@ const Palette = ({
             </>
           )}
         </div>
-        <div className="flex w-full flex-col mt-10">
-          <Tabs size="lg" aria-label="Options">
+        <div className="flex w-full flex-col mt-10 relative">
+          <Link
+            href=""
+            className="absolute top-0 right-0 space-x-2 group rounded-2xl flex items-center bg-[#F3F3F3] px-4 py-2 hover:bg-[#E9E9E9] transition-colors border border-[#E9E9E9] max-sm:w-full max-sm:justify-center max-sm:top-16"
+          >
+            <Image src={figmaIcon} alt="figma icon" />
+            <div className="">Open in Figma</div>
+            <Image src={arrowUp} alt="arrow icon" />
+          </Link>
+
+          <Tabs className="max-sm:mb-16" size="lg" aria-label="Options">
             <Tab key="colors" title="Colors">
               <Card className="bg-inherit shadow-none">
                 <CardBody className="p-0">
@@ -91,7 +103,7 @@ const Palette = ({
                 <CardBody>
                   <div
                     style={{ backgroundColor: fullData?.secondary?.[200] }}
-                    className={`flex items-center flex-wrap flex-1 gap-3 min-[420px]:p-7 p-3 rounded-3xl mt-8`}
+                    className="flex items-center flex-wrap flex-1 gap-3 min-[420px]:p-7 p-3 rounded-3xl"
                   >
                     <div className="w-full md:max-w-4xl mx-auto">
                       <div className="flex md:space-x-4 flex-col md:flex-row items-center md:items-end mb-5 w-full">
