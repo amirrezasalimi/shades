@@ -20,9 +20,19 @@
     "build:plugin": "vite build -c ./vite.config.plugin.ts"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.0.18",
+    "@tanstack/react-query": "latest",
+    "@trpc/client": "next",
+    "@trpc/react-query": "next",
+    "@trpc/server": "next",
+    "axios": "^1.7.2",
+    "clsx": "^2.1.1",
     "monorepo-networker": "^1.5.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-intersection-observer": "^9.10.3",
+    "superjson": "^2.2.1"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.83.0",

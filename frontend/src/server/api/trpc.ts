@@ -12,8 +12,7 @@ import { ZodError } from "zod";
 import { pbInstance } from "../pocketbase";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { type UsersResponse } from "../pocketbase-schema";
-import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import { NextRequest } from "next/server";
+import { type FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
 /**
  * 1. CONTEXT
@@ -129,7 +128,7 @@ const opts = {
 
 const rateLimiter = new RateLimiterMemory(opts);
 
-export const getFingerprint = (req: Request ) => {
+export const getRequestIp = (req: Request ) => {
   const ip= req.headers.get("x-forwarded-for") ;
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
@@ -142,7 +141,7 @@ export const userProcedure = publicProcedure
     if (!opts.ctx.req) {
       return opts.next();
     }
-    const ip = getFingerprint(opts.ctx?.req)??"";
+    const ip = getRequestIp(opts.ctx?.req)??"";
     try {
       await rateLimiter.consume(ip);
     } catch (e) {

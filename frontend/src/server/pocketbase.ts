@@ -1,60 +1,26 @@
-import Pocketbase, { ClientResponseError } from "pocketbase";
+import Pocketbase from "pocketbase";
 import { type TypedPocketBase } from "./pocketbase-schema";
 import { env } from "~/env";
 
-const pbInstance = () => {
+const pbInstance = (token: string) => {
   const _ = new Pocketbase(env.NEXT_PUBLIC_POCKETBASE_HOST) as TypedPocketBase;
   _.autoCancellation(false);
+  if (token) {
+    _.beforeSend = (url, options) => {
+      options.headers = {
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      };
+      return {
+        url,
+        options,
+      }
+    }
+  }
   return _;
 };
 
-export const pb_admin = pbInstance();
+const admin_token = env.POCKETBASE_ADMIN_TOKEN ?? "";
+export const pb_admin = pbInstance(admin_token);
 
-const initPbAdmin = async () => {
-  // TODO: token file cashe
-  if (pb_admin.authStore.isValid) {
-    const auth_res = await pb_admin.admins.authRefresh();
-    if (auth_res.token) {
-      // console.log("Still Valid Token");
-      return auth_res.token;
-    }
-  }
-  // console.log("Connecting to Pocketbase...", env.NEXT_PUBLIC_POCKETBASE_HOST);
-  try {
-    const authData = await pb_admin.admins
-      .authWithPassword(
-        env.POCKETBASE_EMAIL,
-        env.POCKETBASE_PASSWORD
-      );
-    if (authData.token) {
-      // console.log("Connected to Pocketbase");
-    } else {
-      // console.log("Failed to connect to Pocketbase");
-    }
-  } catch (e) {
-    if (e instanceof ClientResponseError) {
-      // console.log("Failed to connect to Pocketbase", e.originalError);
-      pb_admin.authStore.clear();
-    }
-  }
-  return pb_admin.authStore.token;
-};
-
-pb_admin.beforeSend = async function (url, options) {
-  if (!url.includes("auth-with-password")) {
-    if (!pb_admin.authStore.isValid) {
-      const token = await initPbAdmin();
-      options.headers = {
-        ...options.headers,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }
-  return { url, options };
-}
-
-
-
-
-
-export { initPbAdmin, pbInstance };
+export { pbInstance };

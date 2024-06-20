@@ -10,6 +10,28 @@ const config = {
     // Warning: This allows production builds to successfully complete even if
     ignoreDuringBuilds: true,
   },
+  // allow cors for trpc
+  headers: async () => {
+    return [
+      {
+        source: "/api/trpc/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "*",
+          },
+        ],
+      },
+    ];
+  }
 };
 
 export default config;

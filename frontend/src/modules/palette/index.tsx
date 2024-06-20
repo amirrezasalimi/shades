@@ -51,6 +51,9 @@ const Palette = ({
       document.title = `Shades - ${prompt}`;
     }
   }, [prompt]);
+
+  console.log("palette", fullData);
+  
   return (
     <>
       <div className="flex w-full flex-col">
