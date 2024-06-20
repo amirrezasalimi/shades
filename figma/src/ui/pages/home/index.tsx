@@ -9,17 +9,17 @@ import GeneratePalette from "./components/generate";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("generate");
-  const notify = () =>
-    toast.custom(() => (
-      <div className="flex items-center space-x-3 bg-[#F3F3F3] border border-[#E9E9E9] p-3 rounded-2xl backdrop-blur-lg bg-opacity-15">
-        <img width={18} src={CheckmarkIcon} alt="check icon" />
-        <div className="text-[#4C4C4C]">Imported to Figma</div>
-      </div>
-    ));
+  // const notify = () =>
+  //   toast.custom(() => (
+  //     <div className="flex items-center space-x-3 bg-[#F3F3F3] border border-[#E9E9E9] p-3 rounded-2xl backdrop-blur-lg bg-opacity-15">
+  //       <img width={18} src={CheckmarkIcon} alt="check icon" />
+  //       <div className="text-[#4C4C4C]">Imported to Figma</div>
+  //     </div>
+  //   ));
   useView();
   return (
-    <div className="w-full h-full">
-      <div className="p-6 pb-2 sticky top-0 bg-white">
+    <div className="w-full h-full pt-40">
+      <div className="pt-6 px-6 bg-white fixed top-0 z-10 w-full bg-opacity-80 backdrop-blur-xl">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <span className="font-normal text-gray-700 text-[16px]">
@@ -66,7 +66,7 @@ const Home = () => {
           </div>
         </div>
       </div>
-      
+
       {activeTab === "explore" && <Explorer />}
       {activeTab === "generate" && <GeneratePalette />}
     </div>
