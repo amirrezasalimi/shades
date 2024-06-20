@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import useFork from "../../hooks/fork";
 import { useInView } from "react-intersection-observer";
 import arrowImport from "@ui/assets/arrow-import.svg";
+import clsx from "clsx";
+import Spinner from "@ui/shared/components/spinner";
 
 const Item = ({
   id,
@@ -20,15 +22,28 @@ const Item = ({
 }) => {
   const fork = useFork();
 
+  const isLoading = fork.isForking && fork.forkingId === id;
   return (
     <>
       <div
-        className="group hover:bg-[#F3F3F3] transition-colors"
+        className="group hover:bg-[#F3F3F3] transition-colors relative"
         onClick={() => {
           fork.forkToFigma(id);
         }}
       >
-        <div className="flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer mx-6">
+        {isLoading && (
+          <div className="absolute inset-0 w-full h-full bg-white bg-opacity-90 flex items-center justify-center">
+            <div className="w-10 h-10">
+              <Spinner />
+            </div>
+          </div>
+        )}
+        <div
+          className={clsx(
+            "flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer mx-6",
+            isLoading && "opacity-60"
+          )}
+        >
           <div className="flex flex-col space-y-1">
             <p
               title={title}
@@ -80,12 +95,11 @@ const Explorer = () => {
   const next = async () => {
     if (recent.isLoading || !canLoadMore) return;
     const nextPage = (recent.data?.page ?? 1) + 1;
-    console.log("nextPage", nextPage);
     setPage(nextPage);
   };
 
   const { ref, inView } = useInView({
-    delay: 100,
+    delay: 200,
   });
   useEffect(() => {
     next();
@@ -95,14 +109,12 @@ const Explorer = () => {
   return (
     <div className="flex flex-col">
       {recent.isLoading && (
-        <div className="">
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 mx-6 animate-pulse">
-            <div className="flex flex-col space-y-1">
-              <div className="w-36 rounded bg-slate-200 h-5"></div>
-              <div className="h-5 w-10 bg-slate-200 rounded"></div>
-            </div>
-            <div className="rounded-xl overflow-hidden bg-slate-200 h-10 w-44 flex items-center"></div>
+        <div className="flex items-center justify-between py-2 border-b border-gray-100 mx-6 animate-pulse">
+          <div className="flex flex-col space-y-1">
+            <div className="w-36 rounded bg-slate-200 h-5"></div>
+            <div className="h-5 w-10 bg-slate-200 rounded"></div>
           </div>
+          <div className="rounded-xl overflow-hidden bg-slate-200 h-10 w-44 flex items-center"></div>
         </div>
       )}
       {palettes.map((palette) => {
@@ -116,10 +128,7 @@ const Explorer = () => {
           />
         );
       })}
-
       <span ref={ref} className="w-full h-2 bg-transparent" />
-      {/* fetching */}
-      {page > 1 && recent.isFetching && <div className=""></div>}
     </div>
   );
 };

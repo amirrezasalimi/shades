@@ -8,8 +8,10 @@ import toast from "react-hot-toast";
 import CustomToast from "@ui/shared/components/custom-toast";
 import useFork from "../../hooks/fork";
 import Spinner from "@ui/shared/components/spinner";
-
-const GeneratePalette = () => {
+interface Props {
+  onGenerated: () => void;
+}
+const GeneratePalette = ({ onGenerated }: Props) => {
   const [prompt, setPrompt] = useState<string>("");
   const generate = useMutation<any, any, string>({
     mutationFn: async (data) => {
@@ -25,12 +27,19 @@ const GeneratePalette = () => {
 
   const forker = useFork();
   const submit = () => {
+    // not less than 4 characters
     if (!prompt.trim()) {
       toast.custom(() => <CustomToast message="Please enter a prompt" />);
+    } else if (prompt.length < 4) {
+      toast.custom(() => (
+        <CustomToast message="Prompt should be at least 4 characters" />
+      ));
     } else {
       if (generate.isPending) return;
-      generate.mutateAsync(prompt).then((paletteId) => {
-        forker.forkToFigma(paletteId);
+      generate.mutateAsync(prompt).then(async (paletteId) => {
+        await forker.forkToFigma(paletteId);
+        onGenerated();
+        setPrompt("");
       });
     }
   };
