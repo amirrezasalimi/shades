@@ -1,5 +1,6 @@
 import magicoon from "@ui/assets/magicoon.svg";
 import magicoonWhite from "@ui/assets/magicoon-white.svg";
+
 const GeneratePalette = () => {
   return (
     <div className="mx-6 relative">

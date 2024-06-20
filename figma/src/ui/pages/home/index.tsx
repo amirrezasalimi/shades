@@ -66,6 +66,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      
       {activeTab === "explore" && <Explorer />}
       {activeTab === "generate" && <GeneratePalette />}
     </div>
