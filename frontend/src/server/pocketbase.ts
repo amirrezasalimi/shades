@@ -2,7 +2,7 @@ import Pocketbase from "pocketbase";
 import { type TypedPocketBase } from "./pocketbase-schema";
 import { env } from "~/env";
 
-const pbInstance = (token: string) => {
+const pbInstance = (token?: string) => {
   const _ = new Pocketbase(env.NEXT_PUBLIC_POCKETBASE_HOST) as TypedPocketBase;
   _.autoCancellation(false);
   if (token) {
