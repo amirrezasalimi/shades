@@ -53,7 +53,7 @@ const Palette = ({
   }, [prompt]);
 
   console.log("palette", fullData);
-  
+
   return (
     <>
       <div className="flex w-full flex-col">
@@ -80,7 +80,8 @@ const Palette = ({
         </div>
         <div className="flex w-full flex-col mt-10 relative">
           <Link
-            href=""
+            href="https://www.figma.com/community/plugin/1385705522724184971/shades-ai-color-palette-generator"
+            target="_blank"
             className="absolute top-0 right-0 space-x-2 group rounded-2xl flex items-center bg-[#F3F3F3] px-4 py-2 hover:bg-[#E9E9E9] transition-colors border border-[#E9E9E9] max-sm:w-full max-sm:justify-center max-sm:top-16"
           >
             <Image src={figmaIcon} alt="figma icon" />
