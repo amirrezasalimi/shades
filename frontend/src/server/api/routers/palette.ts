@@ -12,7 +12,7 @@ import { CONFIG_KEYS } from "~/shared/constants/config-keys";
 
 export const paletteRouter = createTRPCRouter({
     make: publicProcedure.input(z.object({
-        prompt: z.string().min(5).max(1000),
+        prompt: z.string().min(3).max(1000),
         referral: z.string().max(200).optional()
     })).mutation(async ({ input, ctx }) => {
         const ip = getRequestIp(ctx.req as unknown as Request);

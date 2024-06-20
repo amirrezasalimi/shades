@@ -51,7 +51,7 @@ export const figmaRouter = createTRPCRouter({
     }),
     createPalette: publicProcedure.input(z.object({
         uid: z.string(),
-        prompt: z.string().min(5).max(1000),
+        prompt: z.string().min(3).max(1000),
     })).mutation(async ({ input, ctx }) => {
         const user_id = await getFigmaUserId(input.uid);
         if (!user_id) {
