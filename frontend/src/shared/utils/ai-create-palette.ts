@@ -56,7 +56,7 @@ const aiCreatePalette = async (prompt: string) => {
                 content: ai_prompt,
             }
         ],
-        temperature: 0.5,
+        temperature: 0.7,
     });
     const res = ai_res.choices?.[0]?.message.content;
 
