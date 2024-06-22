@@ -23,6 +23,11 @@ const GeneratePalette = ({ onGenerated }: Props) => {
       });
       return res as unknown as string;
     },
+    onError(error) {
+      if (error?.message) {
+        toast.custom(() => <CustomToast message={error.message} />);
+      }
+    },
   });
 
   const forker = useFork();
