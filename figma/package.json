@@ -15,7 +15,6 @@
     "types:src": "tsc",
     "types:node": "tsc -P tsconfig.node.json",
     "build": "run-s build:*",
-    "prebuild": "run-s types clean",
     "build:ui": "vite build -c ./vite.config.ui.ts",
     "build:plugin": "vite build -c ./vite.config.plugin.ts"
   },
