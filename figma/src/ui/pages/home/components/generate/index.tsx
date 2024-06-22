@@ -90,7 +90,7 @@ const GeneratePalette = ({ onGenerated }: Props) => {
         </button>
       </div>
       <div className="text-[#686868] flex items-center justify-center text-sm">
-        Power taken from
+      Powered by
         <a
           className="text-[#378CF0] pl-1"
           href="https://shades.toolstack.run"
