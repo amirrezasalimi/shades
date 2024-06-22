@@ -14,17 +14,23 @@ const Home = () => {
     <div className="w-full h-full pt-40">
       <div className="pt-6 px-6 bg-white fixed top-0 z-10 w-full bg-opacity-80 backdrop-blur-xl">
         <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="font-normal text-gray-700 text-[16px]">
-              Welcome To
-            </span>
-            <div className="flex items-center pt-1">
-              <img className="w-24" src={logo} alt="logo" />
-              <div className="text-gray-500 pl-2 text-[16px] font-light">
-                /Figma plugin
+          <a
+            href="https://shades.toolstack.run"
+            target="_blank"
+            className="flex items-center space-x-2"
+          >
+            <div className="flex flex-col">
+              <span className="font-normal text-gray-700 text-[16px]">
+                Welcome To
+              </span>
+              <div className="flex items-center pt-1">
+                <img className="w-24" src={logo} alt="logo" />
+                <div className="text-gray-500 pl-2 text-[16px] font-light">
+                  /Figma plugin
+                </div>
               </div>
             </div>
-          </div>
+          </a>
           <div className="flex items-center space-x-2">
             <a href="https://shades.toolstack.run" target="_blank">
               <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
