@@ -450,6 +450,28 @@ const createPaletteFrame = async (props: Props) => {
     // focus on frame
     figma.viewport.scrollAndZoomIntoView([frame]);
 
+    // generate styles
+    const generateStyles = async () => {
+        // name format: type/shade_code color
+        const baseColorsKeys = ["primary", "secondary", "neutral", "text", "background", "success", "error", "warning", "info"];
+        for (const key of baseColorsKeys) {
+            const colorObj = props.palette[key];
+            for (const [shade_code, color] of Object.entries(colorObj.shades)) {
+                const styleName = `${key}/${shade_code} ${color}`;
+                const style = figma.createPaintStyle();
+                style.name = styleName;
+                const rgb_color = convertHexToRgbRange(color);
+                style.paints = [{
+                    type: "SOLID", color: {
+                        r: rgb_color[0], g: rgb_color[1], b: rgb_color[2]
+                    }
+                }];
+            }
+        }
+    }
+    await generateStyles();
+    // notify
+    figma.notify("Palette Styles Created 🎉");
 }
 
 export default createPaletteFrame;
