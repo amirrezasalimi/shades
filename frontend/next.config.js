@@ -10,6 +10,15 @@ const config = {
     // Warning: This allows production builds to successfully complete even if
     ignoreDuringBuilds: true,
   },
+  images:{
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+    imageSizes:[100,200]
+  },  
   // allow cors for trpc
   headers: async () => {
     return [

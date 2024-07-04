@@ -2,6 +2,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { authRouter } from "./routers/auth";
 import { paletteRouter } from "./routers/palette";
 import { figmaRouter } from "./routers/figma";
+import timeRouter from "./routers/time";
 
 /**
  * This is the primary router for your server.
@@ -11,7 +12,8 @@ import { figmaRouter } from "./routers/figma";
 export const appRouter = createTRPCRouter({
   auth: authRouter,
   palette: paletteRouter,
-  figma: figmaRouter
+  figma: figmaRouter,
+  time: timeRouter
 });
 
 // export type definition of API
