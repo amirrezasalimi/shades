@@ -109,13 +109,17 @@ const Explorer = () => {
   return (
     <div className="flex flex-col">
       {recent.isLoading && (
-        <div className="flex items-center justify-between py-2 border-b border-gray-100 mx-6 animate-pulse">
-          <div className="flex flex-col space-y-1">
-            <div className="w-36 rounded bg-slate-200 h-5"></div>
-            <div className="h-5 w-10 bg-slate-200 rounded"></div>
-          </div>
-          <div className="rounded-xl overflow-hidden bg-slate-200 h-10 w-44 flex items-center"></div>
-        </div>
+        <>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => (
+            <div className="flex items-center justify-between py-2 border-b border-gray-100 mx-6 animate-pulse">
+              <div className="flex flex-col space-y-1">
+                <div className="w-36 rounded bg-slate-200 h-5"></div>
+                <div className="h-5 w-10 bg-slate-200 rounded"></div>
+              </div>
+              <div className="rounded-xl overflow-hidden bg-slate-200 h-10 w-44 flex items-center"></div>
+            </div>
+          ))}
+        </>
       )}
       {palettes.map((palette) => {
         const colors = baseColors.map((color) => palette.colors[color]);
