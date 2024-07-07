@@ -3,7 +3,6 @@ import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { CameraControls, Image as ThreeImg, Text } from "@react-three/drei";
 import { api } from "~/shared/utils/trpc/react";
-import { useControls } from "leva";
 import type { FigmaUsersResponse } from "~/server/pocketbase-schema";
 
 const Img = ({ url }: { url: string }) => {
@@ -20,22 +19,11 @@ const Img = ({ url }: { url: string }) => {
 };
 const Time = () => {
   const users = api.time.users.useQuery();
-  console.log(`users`, users);
 
-  const camera = useControls({
-    position: {
-      value: [0, 0, 0],
-      step: 0.1,
-    },
-    rotation: {
-      value: [0, 0, 0],
-      step: 0.1,
-    },
-  });
   // group users by day
   const days = useMemo(() => {
     const days: Record<string, FigmaUsersResponse<unknown>[]> = {};
-    users.data?.items.forEach((user) => {
+    users.data?.forEach((user) => {
       const day = new Date(user.created).toDateString();
       if (!days[day]) {
         days[day] = [];
@@ -44,7 +32,7 @@ const Time = () => {
       }
     });
     return days;
-  }, [users.data?.items]);
+  }, [users.data]);
   return (
     <div className="w-screen h-screen bg-black/90">
       <Canvas>
