@@ -26,13 +26,13 @@ const Item = ({
   return (
     <>
       <div
-        className="group hover:bg-[#F3F3F3] transition-colors relative"
+        className="relative hover:bg-[#F3F3F3] transition-colors group"
         onClick={() => {
           fork.forkToFigma(id);
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 w-full h-full bg-white bg-opacity-90 flex items-center justify-center">
+          <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 w-full h-full">
             <div className="w-10 h-10">
               <Spinner />
             </div>
@@ -47,16 +47,16 @@ const Item = ({
           <div className="flex flex-col space-y-1">
             <p
               title={title}
-              className="text-[13px] max-w-36 truncate group-hover:text-primary transition-colors"
+              className="group-hover:text-primary max-w-36 text-[13px] truncate transition-colors"
             >
               {title}
             </p>
-            <div className="flex items-center text-[#999999] space-x-1">
+            <div className="flex items-center space-x-1 text-[#999999]">
               <img width={12} src={arrowImport} />
               <span className="text-xs">{fork_count}</span>
             </div>
           </div>
-          <div className="rounded-xl overflow-hidden h-10 flex items-center">
+          <div className="flex items-center rounded-xl h-10 overflow-hidden">
             {colors.map((color, index) => {
               return (
                 <div
@@ -71,6 +71,15 @@ const Item = ({
     </>
   );
 };
+const SkeletonItem = () => <div className="flex justify-between items-center border-gray-100 mx-6 py-2 border-b animate-pulse">
+<div className="flex flex-col space-y-1">
+  <div className="bg-slate-200 rounded w-36 h-5"></div>
+  <div className="bg-slate-200 rounded w-10 h-5"></div>
+</div>
+<div className="flex items-center bg-slate-200 rounded-xl w-44 h-10 overflow-hidden"></div>
+</div>;
+
+
 const Explorer = () => {
   const [page, setPage] = useState(1);
   const [palettes, setPalettes] = useState<PaletteFull[]>([]);
@@ -111,13 +120,7 @@ const Explorer = () => {
       {recent.isLoading && (
         <>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => (
-            <div className="flex items-center justify-between py-2 border-b border-gray-100 mx-6 animate-pulse">
-              <div className="flex flex-col space-y-1">
-                <div className="w-36 rounded bg-slate-200 h-5"></div>
-                <div className="h-5 w-10 bg-slate-200 rounded"></div>
-              </div>
-              <div className="rounded-xl overflow-hidden bg-slate-200 h-10 w-44 flex items-center"></div>
-            </div>
+            <SkeletonItem/>
           ))}
         </>
       )}
@@ -132,7 +135,14 @@ const Explorer = () => {
           />
         );
       })}
-      <span ref={ref} className="w-full h-2 bg-transparent" />
+      {recent.isFetching && (
+        <>
+          {[1, 2, 3].map(() => (
+            <SkeletonItem/>
+          ))}
+        </>
+      )}
+      <span ref={ref} className="bg-transparent w-full h-2" />
     </div>
   );
 };
