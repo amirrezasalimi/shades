@@ -80,10 +80,9 @@ const Stats = () => {
                 data={data}
                 className="*:outline-none"
               >
-                {/* <CartesianGrid vertical={false} /> */}
-                {/* @ts-ignore */}
                 <Tooltip
                   cursor={{ fill: "rgba(0,0,0,0.2)" }}
+                  // @ts-ignore
                   content={<CustomTooltip />}
                 />
                 <XAxis
