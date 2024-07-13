@@ -10,6 +10,7 @@ import settings from "@ui/assets/settings.svg";
 import useFork from "@ui/pages/home/hooks/fork";
 import Shades from "./components/shades";
 import Setting from "./components/setting-bottom-sheet";
+import { TOOLSTACK } from "@ui/shared/constants/constants";
 
 interface Toggle {
   isOpen: boolean;
@@ -39,7 +40,7 @@ const ColorPalette: FC<Toggle> = ({
       refetch();
     }
   }, [paletteId, refetch]);
-  
+
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add("overflow-hidden");
@@ -72,7 +73,11 @@ const ColorPalette: FC<Toggle> = ({
                   <p className="max-w-56 text-xl truncate">{data?.prompt}</p>
                 </div>
 
-                <a href="" target="_blank" className="mr-6">
+                <a
+                  href={`${TOOLSTACK}/p/${paletteId}`}
+                  target="_blank"
+                  className="mr-6"
+                >
                   <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-14 h-14 cursor-pointer">
                     <img width={22} src={info} alt="" />
                   </div>

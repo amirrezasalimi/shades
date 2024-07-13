@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import CustomToast from "@ui/shared/components/custom-toast";
 import useFork from "../../hooks/fork";
 import Spinner from "@ui/shared/components/spinner";
+import { TOOLSTACK } from "@ui/shared/constants/constants";
 interface Props {
   onGenerated: () => void;
 }
@@ -50,14 +51,14 @@ const GeneratePalette = ({ onGenerated }: Props) => {
   };
 
   return (
-    <div className="mx-6 relative">
-      <div className="before:left-0 before:-top-10 before:absolute before:bg-[url(@ui/assets/lineVector.svg)] before:w-full before:h-full"></div>
-      <div className="flex items-center justify-center flex-col pt-14 mb-24">
+    <div className="relative mx-6">
+      <div className="before:-top-10 before:left-0 before:absolute before:bg-[url(@ui/assets/lineVector.svg)] before:w-full before:h-full"></div>
+      <div className="flex flex-col justify-center items-center mb-24 pt-14">
         <img src={magicoon} alt="magicoon icon" width={75} />
-        <div className="text-[#313131] text-xl my-4">
+        <div className="my-4 text-[#313131] text-xl">
           Generate <span className="text-primary">Ai</span> Color Palettes
         </div>
-        <p className="text-center text-xs font-normal text-[#686868]">
+        <p className="font-normal text-[#686868] text-center text-xs">
           Tell me the title of the project or the <br /> pages of your site so
           that I can suggest <br /> you a color palette:
         </p>
@@ -72,12 +73,12 @@ const GeneratePalette = ({ onGenerated }: Props) => {
           }}
           type="text"
           placeholder="E-commerce landing"
-          className="border border-[#B0B0B0] my-6 px-5 py-3 w-full bg-white z-[1] rounded-2xl placeholder:text-[#999999] focus:outline-none text-[#313131] text-sm"
+          className="z-[1] border-[#B0B0B0] bg-white my-6 px-5 py-3 border rounded-2xl w-full text-sm placeholder:text-[#999999] focus:outline-none text-[#313131]"
         />
         <button
           onClick={submit}
           disabled={generate.isPending}
-          className="w-full from-primary bg-gradient-to-r to-[#EC681D] flex items-center justify-center z-[1] text-white h-[50px] space-x-1 rounded-2xl"
+          className="z-[1] flex justify-center items-center space-x-1 bg-gradient-to-r from-primary to-[#EC681D] rounded-2xl w-full h-[50px] text-white"
         >
           {generate.isPending ? (
             <Spinner />
@@ -89,11 +90,11 @@ const GeneratePalette = ({ onGenerated }: Props) => {
           )}
         </button>
       </div>
-      <div className="text-[#686868] flex items-center justify-center text-sm">
+      <div className="flex justify-center items-center text-[#686868] text-sm">
       Powered by
         <a
-          className="text-[#378CF0] pl-1"
-          href="https://shades.toolstack.run"
+          className="pl-1 text-[#378CF0]"
+          href={TOOLSTACK}
           target="_blank"
         >
           shades.toolstack.run

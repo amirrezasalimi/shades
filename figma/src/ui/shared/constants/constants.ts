@@ -1,1 +1,2 @@
-export const TRPC_HOST="https://shades.toolstack.run/api/trpc";
+export const TOOLSTACK="https://shades.toolstack.run";
+export const TRPC_HOST=`${TOOLSTACK}/api/trpc`;
