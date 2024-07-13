@@ -39,11 +39,20 @@ const ColorPalette: FC<Toggle> = ({
       refetch();
     }
   }, [paletteId, refetch]);
+  
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isOpen]);
 
   return (
     <>
       {isOpen && (
-        <div className="z-20 overflow-y-auto left-0 bg-white fixed top-0 right-0 h-screen">
+        <div className="top-0 right-0 left-0 z-20 fixed bg-white h-screen overflow-y-auto">
           {isLoading ? (
             <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 w-full h-full">
               <div className="w-10 h-10">
@@ -52,38 +61,38 @@ const ColorPalette: FC<Toggle> = ({
             </div>
           ) : (
             <div className="mb-20">
-              <div className="h-20 bg-white bg-opacity-80 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between fixed top-0 right-0 left-0">
-                <div className="ml-6 flex items-center space-x-4">
+              <div className="top-0 right-0 left-0 fixed flex justify-between items-center border-gray-100 bg-white bg-opacity-80 backdrop-blur-xl border-b h-20">
+                <div className="flex items-center space-x-4 ml-6">
                   <div
                     className="cursor-pointer"
                     onClick={() => showModal(false)}
                   >
                     <img width={24} src={angleLeft} alt="" />
                   </div>
-                  <p className="truncate text-xl max-w-56">{data?.prompt}</p>
+                  <p className="max-w-56 text-xl truncate">{data?.prompt}</p>
                 </div>
 
                 <a href="" target="_blank" className="mr-6">
-                  <div className="border border-gray-300 flex items-center justify-center rounded-2xl w-14 h-14 cursor-pointer">
+                  <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-14 h-14 cursor-pointer">
                     <img width={22} src={info} alt="" />
                   </div>
                 </a>
               </div>
 
-              <div className="mt-4 h-full mx-6 pt-20">
+              <div className="mx-6 mt-4 pt-20 h-full">
                 <Shades data={data} />
               </div>
 
-              <div className="fixed bottom-5 flex items-center w-[calc(100%_-_48px)] left-1/2 -translate-x-1/2 h-[50px] overflow-hidden rounded-2xl">
+              <div className="bottom-5 left-1/2 fixed flex items-center rounded-2xl w-[calc(100%_-_48px)] h-[50px] -translate-x-1/2 overflow-hidden">
                 <div
                   onClick={() => fork.forkToFigma(paletteId)}
-                  className="flex items-center h-full cursor-pointer space-x-2 justify-center text-white from-primary bg-gradient-to-r to-[#EC681D] w-[calc(100%_-_50px)]"
+                  className="flex justify-center items-center space-x-2 bg-gradient-to-r from-primary to-[#EC681D] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
                 >
                   <img width={22} src={figma} alt="" />
                   <span>Import to figma</span>
                 </div>
                 <div
-                  className="w-[50px] bg-white h-full border-gray-100 cursor-pointer rounded-r-2xl border flex items-center justify-center"
+                  className="flex justify-center items-center border-gray-100 bg-white border rounded-r-2xl w-[50px] h-full cursor-pointer"
                   onClick={() => setToggleBottomSheet(true)}
                 >
                   <img width={24} src={settings} alt="" />
