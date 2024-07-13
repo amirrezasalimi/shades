@@ -8,17 +8,22 @@ import { useInView } from "react-intersection-observer";
 import arrowImport from "@ui/assets/arrow-import.svg";
 import clsx from "clsx";
 import Spinner from "@ui/shared/components/spinner";
+import ColorPalette from "./components/colors-palette";
 
 const Item = ({
   id,
   title,
   fork_count,
   colors,
+  paletteId,
+  targetEvent,
 }: {
   id: string;
   title: string;
   fork_count: number;
   colors: string[];
+  paletteId: () => void;
+  targetEvent: () => void;
 }) => {
   const fork = useFork();
 
@@ -28,7 +33,8 @@ const Item = ({
       <div
         className="relative hover:bg-[#F3F3F3] transition-colors group"
         onClick={() => {
-          fork.forkToFigma(id);
+          paletteId();
+          targetEvent();
         }}
       >
         {isLoading && (
@@ -71,16 +77,18 @@ const Item = ({
     </>
   );
 };
-const SkeletonItem = () => <div className="flex justify-between items-center border-gray-100 mx-6 py-2 border-b animate-pulse">
-<div className="flex flex-col space-y-1">
-  <div className="bg-slate-200 rounded w-36 h-5"></div>
-  <div className="bg-slate-200 rounded w-10 h-5"></div>
-</div>
-<div className="flex items-center bg-slate-200 rounded-xl w-44 h-10 overflow-hidden"></div>
-</div>;
-
+const SkeletonItem = () => (
+  <div className="flex justify-between items-center border-gray-100 mx-6 py-2 border-b animate-pulse">
+    <div className="flex flex-col space-y-1">
+      <div className="bg-slate-200 rounded w-36 h-5"></div>
+      <div className="bg-slate-200 rounded w-10 h-5"></div>
+    </div>
+    <div className="flex items-center bg-slate-200 rounded-xl w-44 h-10 overflow-hidden"></div>
+  </div>
+);
 
 const Explorer = () => {
+  const fork = useFork();
   const [page, setPage] = useState(1);
   const [palettes, setPalettes] = useState<PaletteFull[]>([]);
 
@@ -113,10 +121,24 @@ const Explorer = () => {
   useEffect(() => {
     next();
   }, [inView]);
+
   const baseColors = ["primary", "secondary", "neutral", "background", "text"];
+
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [selectedPaletteId, setSelectedPaletteId] = useState<string>("");
+
+  const handleItemClicked = (paletteId: string) => {
+    setSelectedPaletteId(paletteId);
+    setShowColorModal(true);
+  };
 
   return (
     <div className="flex flex-col">
+      <ColorPalette
+        showModal={setShowColorModal}
+        isOpen={showColorModal}
+        paletteId={selectedPaletteId}
+      />
       {recent.isLoading && (
         <>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => (
@@ -132,6 +154,10 @@ const Explorer = () => {
             title={palette.prompt}
             fork_count={palette.fork_count}
             colors={colors}
+            paletteId={() => {
+              handleItemClicked(palette.id);
+            }}
+            targetEvent={() => setShowColorModal(true)}
           />
         );
       })}
