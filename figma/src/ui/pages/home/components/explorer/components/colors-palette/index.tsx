@@ -19,11 +19,7 @@ interface Toggle {
   paletteId: string;
 }
 
-const ColorPalette: FC<Toggle> = ({
-  paletteId,
-  isOpen,
-  showModal,
-}) => {
+const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
   const forker = useFork();
   const { data, isLoading, refetch } = useQuery({
     queryFn: async () => {
@@ -60,8 +56,8 @@ const ColorPalette: FC<Toggle> = ({
     <>
       <div
         className={clsx(
-          "top-0 right-0 left-0 z-20 fixed bg-white h-screen overflow-y-auto transition-all duration-300",
-          isOpen ? "w-full" : "w-0"
+          "top-0 right-0 z-20 fixed bg-white h-screen overflow-y-auto transition-all duration-300",
+          isOpen ? "left-0" : "left-96"
         )}
       >
         {isLoading ? (
@@ -72,7 +68,12 @@ const ColorPalette: FC<Toggle> = ({
           </div>
         ) : (
           <div className="mb-20">
-            <div className="top-0 right-0 left-0 fixed flex justify-between items-center border-gray-100 bg-white bg-opacity-80 backdrop-blur-xl border-b h-20">
+            <div
+              className={clsx(
+                "h-20 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-gray-100 flex items-center justify-between fixed -top-96 right-0 left-0",
+                isOpen ? "top-0" : "-top-96"
+              )}
+            >
               <div className="flex items-center space-x-4 ml-6">
                 <div
                   className="cursor-pointer"
@@ -97,7 +98,12 @@ const ColorPalette: FC<Toggle> = ({
               <Shades data={data} />
             </div>
 
-            <div className="bottom-5 left-1/2 fixed flex items-center rounded-2xl w-[calc(100%_-_48px)] h-[50px] -translate-x-1/2 overflow-hidden">
+            <div
+              className={clsx(
+                "fixed -bottom-96 flex items-center w-[calc(100%_-_48px)] left-1/2 -translate-x-1/2 transition-all duration-300 h-[50px] overflow-hidden rounded-2xl",
+                isOpen ? "bottom-5" : "-bottom-96"
+              )}
+            >
               <div
                 onClick={fork}
                 className="flex justify-center items-center space-x-2 bg-gradient-to-r from-primary to-[#EC681D] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
