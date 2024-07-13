@@ -15,14 +15,10 @@ const useFork = () => {
       palette_id: paletteId,
     });
   };
-  const forkToFigma = async (id: string) => {
+  const forkToFigma = async (id: string,fullPalette:PaletteFull) => {
     if (forkingId) return;
     try {
       setForkingId(id);
-      const fullPalette = (await api.figma.getPalette.query({
-        id,
-      })) as unknown as PaletteFull;
-
       NetworkMessages.CREATE_PALETTE.send({
         palette: fullPalette,
       });

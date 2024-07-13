@@ -23,7 +23,7 @@ const ColorPalette: FC<Toggle> = ({
   isOpen,
   showModal = () => {},
 }) => {
-  const fork = useFork();
+  const forker = useFork();
   const { data, isLoading, refetch } = useQuery({
     queryFn: async () => {
       return (await api.figma.getPalette.query({
@@ -50,6 +50,11 @@ const ColorPalette: FC<Toggle> = ({
     };
   }, [isOpen]);
 
+  const fork = () => {
+    if (data) {
+      forker.forkToFigma(paletteId, data);
+    }
+  };
   return (
     <>
       {isOpen && (
@@ -72,7 +77,6 @@ const ColorPalette: FC<Toggle> = ({
                   </div>
                   <p className="max-w-56 text-xl truncate">{data?.prompt}</p>
                 </div>
-
                 <a
                   href={`${TOOLSTACK}/p/${paletteId}`}
                   target="_blank"
@@ -90,7 +94,7 @@ const ColorPalette: FC<Toggle> = ({
 
               <div className="bottom-5 left-1/2 fixed flex items-center rounded-2xl w-[calc(100%_-_48px)] h-[50px] -translate-x-1/2 overflow-hidden">
                 <div
-                  onClick={() => fork.forkToFigma(paletteId)}
+                  onClick={fork}
                   className="flex justify-center items-center space-x-2 bg-gradient-to-r from-primary to-[#EC681D] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
                 >
                   <img width={22} src={figma} alt="" />
