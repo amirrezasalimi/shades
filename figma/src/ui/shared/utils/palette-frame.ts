@@ -1,6 +1,7 @@
 import { ColorPalette } from "@common/models/palette";
 import { LOGO_BASE64 } from "../constants/logo-base64";
 import { convertHexToRgbRange } from "@common/utils/color";
+import { PluginSettings } from "@common/models/settings";
 
 interface Props {
     id: string;
@@ -450,11 +451,11 @@ const createPaletteFrame = async (props: Props) => {
     // focus on frame
     figma.viewport.scrollAndZoomIntoView([frame]);
 
+    const allColorsKeys = ["primary", "secondary", "neutral", "text", "background", "success", "error", "warning", "info"];
     // generate styles
     const generateStyles = async () => {
         // name format: type/shade_code color
-        const baseColorsKeys = ["primary", "secondary", "neutral", "text", "background", "success", "error", "warning", "info"];
-        for (const key of baseColorsKeys) {
+        for (const key of allColorsKeys) {
             const colorObj = props.palette[key];
             for (const [shade_code, color] of Object.entries(colorObj.shades)) {
                 const styleName = `${key}/${shade_code} ${color}`;
@@ -469,9 +470,48 @@ const createPaletteFrame = async (props: Props) => {
             }
         }
     }
-    await generateStyles();
-    // notify
-    figma.notify("Palette Styles Created 🎉");
+    const generateVariables = async () => {
+        const collectionId = `${props.id}-palette`;
+        const collections = await figma.variables.getLocalVariableCollectionsAsync();
+        const collection =
+            collections.find((collection) => collection.name === collectionId) ??
+            figma.variables.createVariableCollection(collectionId);
+        for (const key of allColorsKeys) {
+            const colorObj = props.palette[key];
+            for (const [shade_code, color] of Object.entries(colorObj.shades)) {
+                // check exists
+                const exists = await figma.variables.getVariableByIdAsync(`${key}/${shade_code}`);
+                if (exists) {
+                    continue;
+                }
+                try {
+                    const v = figma.variables.createVariable(`${key}/${shade_code}`, collection, "COLOR")
+                    const rgb = convertHexToRgbRange(color);
+                    v.setValueForMode(collection.modes[0].modeId, {
+                        r: rgb[0],
+                        g: rgb[1],
+                        b: rgb[2],
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+    }
+    const settings = (await figma.clientStorage.getAsync("settings")) as PluginSettings | null;
+    const addToStyle = settings?.addToStyle ?? true;
+    const addToVariables = !!settings?.addToVariables;
+    if (addToStyle) {
+        await generateStyles();
+        figma.notify("Palette Styles Created 🎉");
+        if (addToVariables) {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+    }
+    if (addToVariables) {
+        await generateVariables();
+        figma.notify("Palette Variables Created 🎉");
+    }
 }
 
 export default createPaletteFrame;
