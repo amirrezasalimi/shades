@@ -9,6 +9,7 @@ import CustomToast from "@ui/shared/components/custom-toast";
 import useFork from "../../hooks/fork";
 import Spinner from "@ui/shared/components/spinner";
 import { TOOLSTACK } from "@ui/shared/constants/constants";
+import PaletteFull from "@common/models/palette-full";
 interface Props {
   onGenerated: () => void;
 }
@@ -43,7 +44,10 @@ const GeneratePalette = ({ onGenerated }: Props) => {
     } else {
       if (generate.isPending) return;
       generate.mutateAsync(prompt).then(async (paletteId) => {
-        await forker.forkToFigma(paletteId);
+        const data = (await api.figma.getPalette.query({
+          id: paletteId,
+        })) as unknown as PaletteFull;
+        await forker.forkToFigma(paletteId, data);
         onGenerated();
         setPrompt("");
       });
@@ -91,12 +95,8 @@ const GeneratePalette = ({ onGenerated }: Props) => {
         </button>
       </div>
       <div className="flex justify-center items-center text-[#686868] text-sm">
-      Powered by
-        <a
-          className="pl-1 text-[#378CF0]"
-          href={TOOLSTACK}
-          target="_blank"
-        >
+        Powered by
+        <a className="pl-1 text-[#378CF0]" href={TOOLSTACK} target="_blank">
           shades.toolstack.run
         </a>
       </div>
