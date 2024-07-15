@@ -16,7 +16,7 @@ import clsx from "clsx";
 interface Toggle {
   isOpen: boolean;
   showModal: (isOpen: boolean) => void;
-  paletteId: string;
+  paletteId: string | null;
 }
 
 const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
@@ -48,7 +48,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
   }, [isOpen]);
 
   const fork = () => {
-    if (data) {
+    if (data && paletteId) {
       forker.forkToFigma(paletteId, data);
     }
   };

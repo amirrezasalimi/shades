@@ -69,11 +69,7 @@ const Home = () => {
 
       {activeTab === "explore" && <Explorer />}
       {activeTab === "generate" && (
-        <GeneratePalette
-          onGenerated={() => {
-            setActiveTab("explore");
-          }}
-        />
+        <GeneratePalette/>
       )}
     </div>
   );

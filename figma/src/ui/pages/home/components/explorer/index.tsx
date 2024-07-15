@@ -15,66 +15,45 @@ const Item = ({
   title,
   fork_count,
   colors,
-  paletteId,
-  targetEvent,
+  onClick,
 }: {
   id: string;
   title: string;
   fork_count: number;
   colors: string[];
-  paletteId: () => void;
-  targetEvent: () => void;
+  onClick: () => void;
 }) => {
-  const fork = useFork();
-
-  const isLoading = fork.isForking && fork.forkingId === id;
   return (
-    <>
+    <div
+      className="relative hover:bg-[#F3F3F3] transition-colors group"
+      onClick={onClick}
+    >
       <div
-        className="relative hover:bg-[#F3F3F3] transition-colors group"
-        onClick={() => {
-          paletteId();
-          targetEvent();
-        }}
+        className={
+          "flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer mx-6"
+        }
       >
-        {isLoading && (
-          <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 w-full h-full">
-            <div className="w-10 h-10">
-              <Spinner />
-            </div>
-          </div>
-        )}
-        <div
-          className={clsx(
-            "flex items-center justify-between py-2 border-b border-gray-100 cursor-pointer mx-6",
-            isLoading && "opacity-60"
-          )}
-        >
-          <div className="flex flex-col space-y-1">
-            <p
-              title={title}
-              className="group-hover:text-primary max-w-36 text-[13px] truncate transition-colors"
-            >
-              {title}
-            </p>
-            <div className="flex items-center space-x-1 text-[#999999]">
-              <img width={12} src={arrowImport} />
-              <span className="text-xs">{fork_count}</span>
-            </div>
-          </div>
-          <div className="flex items-center rounded-xl h-10 overflow-hidden">
-            {colors.map((color, index) => {
-              return (
-                <div
-                  className="w-9 h-full"
-                  style={{ backgroundColor: color }}
-                />
-              );
-            })}
+        <div className="flex flex-col space-y-1">
+          <p
+            title={title}
+            className="group-hover:text-primary max-w-36 text-[13px] truncate transition-colors"
+          >
+            {title}
+          </p>
+          <div className="flex items-center space-x-1 text-[#999999]">
+            <img width={12} src={arrowImport} />
+            <span className="text-xs">{fork_count}</span>
           </div>
         </div>
+        <div className="flex items-center rounded-xl h-10 overflow-hidden">
+          {colors.map((color, index) => {
+            return (
+              <div className="w-9 h-full" style={{ backgroundColor: color }} />
+            );
+          })}
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 const SkeletonItem = () => (
@@ -124,10 +103,10 @@ const Explorer = () => {
 
   const baseColors = ["primary", "secondary", "neutral", "background", "text"];
 
-  const [showColorModal, setShowColorModal] = useState(false);
+  const [showPaletteModal, setShowColorModal] = useState(false);
   const [selectedPaletteId, setSelectedPaletteId] = useState<string>("");
 
-  const handleItemClicked = (paletteId: string) => {
+  const openItem = (paletteId: string) => {
     setSelectedPaletteId(paletteId);
     setShowColorModal(true);
   };
@@ -136,13 +115,13 @@ const Explorer = () => {
     <div className="flex flex-col">
       <ColorPalette
         showModal={setShowColorModal}
-        isOpen={showColorModal}
+        isOpen={showPaletteModal}
         paletteId={selectedPaletteId}
       />
       {recent.isLoading && (
         <>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => (
-            <SkeletonItem/>
+            <SkeletonItem />
           ))}
         </>
       )}
@@ -154,17 +133,16 @@ const Explorer = () => {
             title={palette.prompt}
             fork_count={palette.fork_count}
             colors={colors}
-            paletteId={() => {
-              handleItemClicked(palette.id);
+            onClick={() => {
+              openItem(palette.id);
             }}
-            targetEvent={() => setShowColorModal(true)}
           />
         );
       })}
       {recent.isFetching && (
         <>
           {[1, 2, 3].map(() => (
-            <SkeletonItem/>
+            <SkeletonItem />
           ))}
         </>
       )}

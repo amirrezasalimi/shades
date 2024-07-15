@@ -9,11 +9,9 @@ import CustomToast from "@ui/shared/components/custom-toast";
 import useFork from "../../hooks/fork";
 import Spinner from "@ui/shared/components/spinner";
 import { TOOLSTACK } from "@ui/shared/constants/constants";
-import PaletteFull from "@common/models/palette-full";
-interface Props {
-  onGenerated: () => void;
-}
-const GeneratePalette = ({ onGenerated }: Props) => {
+import ColorPalette from "../explorer/components/colors-palette";
+
+const GeneratePalette = () => {
   const [prompt, setPrompt] = useState<string>("");
   const generate = useMutation<any, any, string>({
     mutationFn: async (data) => {
@@ -33,6 +31,11 @@ const GeneratePalette = ({ onGenerated }: Props) => {
   });
 
   const forker = useFork();
+  const [showPaletteModal, setShowColorModal] = useState(false);
+  const [selectedPaletteId, setSelectedPaletteId] = useState<string | null>(
+    null
+  );
+
   const submit = () => {
     // not less than 4 characters
     if (!prompt.trim()) {
@@ -44,11 +47,9 @@ const GeneratePalette = ({ onGenerated }: Props) => {
     } else {
       if (generate.isPending) return;
       generate.mutateAsync(prompt).then(async (paletteId) => {
-        const data = (await api.figma.getPalette.query({
-          id: paletteId,
-        })) as unknown as PaletteFull;
-        await forker.forkToFigma(paletteId, data);
-        onGenerated();
+        if (!paletteId) return;
+        setSelectedPaletteId(paletteId);
+        setShowColorModal(true);
         setPrompt("");
       });
     }
@@ -56,6 +57,11 @@ const GeneratePalette = ({ onGenerated }: Props) => {
 
   return (
     <div className="relative mx-6">
+      <ColorPalette
+        showModal={setShowColorModal}
+        isOpen={showPaletteModal}
+        paletteId={selectedPaletteId}
+      />
       <div className="before:-top-10 before:left-0 before:absolute before:bg-[url(@ui/assets/lineVector.svg)] before:w-full before:h-full"></div>
       <div className="flex flex-col justify-center items-center mb-24 pt-14">
         <img src={magicoon} alt="magicoon icon" width={75} />
