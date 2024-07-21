@@ -95,7 +95,7 @@ const GeneratePalette = () => {
           ) : (
             <>
               <img src={magicoonWhite} alt="magicoon" className="w-5" />
-              <span className="text-[14px]">Generate & import to figma</span>
+              <span className="text-[14px]">Generate</span>
             </>
           )}
         </button>
