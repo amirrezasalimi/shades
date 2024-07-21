@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.0.18",
-    "@tanstack/react-query": "latest",
+    "@tanstack/react-query": "^5.51.11",
     "@trpc/client": "next",
     "@trpc/react-query": "next",
     "@trpc/server": "next",

@@ -6,3 +6,44 @@ body {
   font-family: "Inter", sans-serif;
   overflow-x: hidden !important;
 }
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #DADADA;
+}
+
+::-webkit-scrollbar-thumb {
+  background: unset;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #DADADA transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #DADADA;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #DADADA;
+  border-radius: 6px;
+  border: none;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: unset;
+}

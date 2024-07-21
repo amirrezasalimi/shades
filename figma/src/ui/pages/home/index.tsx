@@ -12,7 +12,7 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState("generate");
   useView();
   return (
-    <div className="pt-40 w-full h-full">
+    <div className="pt-40 w-full h-full overflow-hidden">
       <div className="top-0 z-10 fixed bg-white bg-opacity-80 backdrop-blur-xl px-6 pt-6 w-full">
         <div className="flex justify-between items-center">
           <a
@@ -68,9 +68,7 @@ const Home = () => {
       </div>
 
       {activeTab === "explore" && <Explorer />}
-      {activeTab === "generate" && (
-        <GeneratePalette/>
-      )}
+      {activeTab === "generate" && <GeneratePalette />}
     </div>
   );
 };

@@ -27,7 +27,7 @@ const Shades = ({ data }: { data: PaletteFull | undefined }) => {
             const lengthShades = Object.keys(shadesColor).length;
 
             return (
-              <div className="flex flex-col border-gray-100 mt-3 first:mt-0 pt-3 first:pt-0 last:pb-24 border-t first:border-t-0">
+              <div className="flex flex-col mx-6 border-gray-100 mt-3 first:mt-0 pt-3 first:pt-0 last:pb-24 border-t first:border-t-0">
                 <div className="flex justify-between items-center">
                   <div className="font-semibold text-[#191919] text-lg">
                     {fullColors && fullColors[key].name}
