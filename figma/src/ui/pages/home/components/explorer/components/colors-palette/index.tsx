@@ -52,6 +52,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
       forker.forkToFigma(paletteId, data);
     }
   };
+
   return (
     <>
       <div
