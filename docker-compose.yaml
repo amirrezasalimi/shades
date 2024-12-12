@@ -10,12 +10,18 @@ services:
     volumes:
       - ./pb/data:/pb_data
       - ./pb/hooks:/pb_hooks #optional
-    
+
   shades_frontend_x:
     container_name: shades-frontend-x
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_POCKETBASE_HOST: ${NEXT_PUBLIC_POCKETBASE_HOST}
+    environment:
+      - NEXT_PUBLIC_POCKETBASE_HOST=${NEXT_PUBLIC_POCKETBASE_HOST}
+
     volumes:
       - .:/frontend
     restart: unless-stopped
+
