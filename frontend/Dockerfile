@@ -3,6 +3,10 @@ FROM node:21.6
 
 
 
+
+# Set the working directory in the container
+WORKDIR /app
+
 # Accept build arguments
 ARG NEXT_PUBLIC_POCKETBASE_HOST
 ARG POCKETBASE_EMAIL
@@ -15,9 +19,7 @@ RUN echo "NEXT_PUBLIC_POCKETBASE_HOST=$NEXT_PUBLIC_POCKETBASE_HOST" >> .env && \
     echo "POCKETBASE_PASSWORD=$POCKETBASE_PASSWORD" >> .env && \
     echo "POCKETBASE_ADMIN_TOKEN=$POCKETBASE_ADMIN_TOKEN" >> .env
 
-# Set the working directory in the container
-WORKDIR /app
-
+    
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
