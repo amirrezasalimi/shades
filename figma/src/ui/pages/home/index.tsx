@@ -84,7 +84,6 @@ const Home = () => {
           </div>
         </div>
       </div>
-
       {activeTab === "colorWheel" && <Explorer />}
       {activeTab === "aiColors" && <GeneratePalette />}
     </div>

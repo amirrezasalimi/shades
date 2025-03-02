@@ -1,0 +1,27 @@
+version: '3'
+services:
+  shades_pocketbase_x:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: shades-pocketbase-x
+    restart: unless-stopped
+    command:
+      - --encryptionEnv #optional
+      - ENCRYPTION #optional
+    volumes:
+      - ./pb/data:/pb_data
+      - ./pb/hooks:/pb_hooks #optional
+
+  shades_frontend_x:
+    container_name: shades-frontend-x
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_POCKETBASE_HOST: ${NEXT_PUBLIC_POCKETBASE_HOST}
+        POCKETBASE_EMAIL: ${POCKETBASE_EMAIL}
+        POCKETBASE_PASSWORD: ${POCKETBASE_PASSWORD}
+        POCKETBASE_ADMIN_TOKEN: ${POCKETBASE_ADMIN_TOKEN}
+    volumes:
+      - .:/frontend
+    restart: unless-stopped
+

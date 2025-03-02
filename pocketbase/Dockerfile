@@ -15,7 +15,7 @@ RUN unzip /tmp/pb.zip -d /pb/
 COPY ./pb_migrations /pb/pb_migrations
 
 # Copy the local pb_hooks dir into the image
-COPY ./pb_hooks /pb/pb_hooks
+# COPY ./pb_hooks /pb/pb_hooks
 
 
 # Change directory to /pb where pocketbase executable resides

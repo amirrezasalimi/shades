@@ -40,7 +40,7 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
       {isOpen && (
         <div
           onClick={() => showBottomSheet(false)}
-          className="top-0 right-0 bottom-0 left-0 z-30 fixed bg-black bg-opacity-10"
+          className="top-0 right-0 bottom-0 left-0 z-30 fixed bg-black bg-opacity-60"
         ></div>
       )}
 
@@ -52,14 +52,14 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
         <div className="flex flex-col">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <img width={20} src={settings} alt="" />
+              <img width={20} src={settings} alt="setting icon" />
               <span className="font-medium">Import settings</span>
             </div>
             <div
               className="cursor-pointer"
               onClick={() => showBottomSheet(false)}
             >
-              <img width={24} src={x} alt="" />
+              <img width={24} src={x} alt="x icon" />
             </div>
           </div>
           <div className="flex justify-between items-center mt-6 mb-4">

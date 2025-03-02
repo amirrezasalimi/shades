@@ -52,6 +52,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
       forker.forkToFigma(paletteId, data);
     }
   };
+
   return (
     <>
       <div
@@ -67,7 +68,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
             </div>
           </div>
         ) : (
-          <div className="mb-20">
+          <div>
             <div
               className={clsx(
                 "h-20 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-gray-100 flex items-center justify-between fixed -top-96 right-0 left-0",
@@ -94,7 +95,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
               </a>
             </div>
 
-            <div className="mx-6 mt-4 pt-20 h-full">
+            <div className="mt-20 pt-4 h-full overflow-y-auto scrollbar-custom">
               <Shades data={data} />
             </div>
 
@@ -106,7 +107,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
             >
               <div
                 onClick={fork}
-                className="flex justify-center items-center space-x-2 bg-gradient-to-r from-primary to-[#EC681D] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
+                className="flex justify-center items-center space-x-2 bg-[#232323] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
               >
                 <img width={22} src={figma} alt="" />
                 <span>Import to figma</span>
