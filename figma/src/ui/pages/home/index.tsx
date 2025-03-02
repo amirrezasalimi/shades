@@ -7,13 +7,15 @@ import discord from "@ui/assets/discord.svg";
 import { clsx } from "clsx";
 import GeneratePalette from "./components/generate";
 import { TOOLSTACK } from "@ui/shared/constants/constants";
+import MagicoonWhite from "@ui/assets/magicoon-white";
+import ColorWheel from "@ui/assets/color-wheel";
 
 const Home = () => {
-  const [activeTab, setActiveTab] = useState("generate");
+  const [activeTab, setActiveTab] = useState("aiColors");
   useView();
   return (
     <div className="pt-40 w-full h-full">
-      <div className="top-0 z-10 fixed bg-white bg-opacity-80 backdrop-blur-xl px-6 pt-6 w-full">
+      <div className="top-0 z-10 inset-x-0 fixed bg-white bg-opacity-80 backdrop-blur-xl px-6 pt-6 w-full border-b-2 border-[#E9E9E9]">
         <div className="flex justify-between items-center">
           <a
             href={TOOLSTACK}
@@ -45,32 +47,46 @@ const Home = () => {
             </a>
           </div>
         </div>
-        <div className="relative z-10 flex items-center bg-[#E9E9E9] mt-5 p-1 rounded-2xl h-12">
+        <div className="relative z-10 flex items-center mt-5 pb-2 rounded-2xl gap-x-5">
           <div
             className={clsx(
-              "w-1/2 flex items-center justify-center rounded-2xl h-full transition-colors cursor-pointer",
-              activeTab === "generate" && "bg-white text-primary shadow-sm"
+              "h-0.5 bg-primary absolute top-full transition-transform",
+              activeTab === "colorWheel"
+                ? "translate-x-[103px] w-[105px]"
+                : "translate-x-1 w-[80px]"
             )}
-            onClick={() => setActiveTab("generate")}
+          />
+          <div
+            className={clsx(
+              "flex items-center justify-center text-sm rounded-2xl h-full transition-colors cursor-pointer gap-1",
+              activeTab === "aiColors" ? "text-primary" : "text-[#808080]"
+            )}
+            onClick={() => setActiveTab("aiColors")}
           >
-            Generate Palette
+            <MagicoonWhite
+              color={activeTab === "aiColors" ? "#ff473b" : "#808080"}
+              size="20px"
+            />
+            Ai Colors
           </div>
           <div
             className={clsx(
-              "w-1/2 flex items-center justify-center rounded-2xl h-full transition-colors cursor-pointer",
-              activeTab === "explore" && "bg-white text-primary shadow-sm"
+              "flex items-center justify-center text-sm rounded-2xl h-full transition-colors cursor-pointer gap-1",
+              activeTab === "colorWheel" ? "text-primary" : "text-[#808080]"
             )}
-            onClick={() => setActiveTab("explore")}
+            onClick={() => setActiveTab("colorWheel")}
           >
-            Explore
+            <ColorWheel
+              size="18px"
+              color={activeTab === "colorWheel" ? "#ff473b" : "#808080"}
+            />
+            Color Wheel
           </div>
         </div>
       </div>
 
-      {activeTab === "explore" && <Explorer />}
-      {activeTab === "generate" && (
-        <GeneratePalette/>
-      )}
+      {activeTab === "colorWheel" && <Explorer />}
+      {activeTab === "aiColors" && <GeneratePalette />}
     </div>
   );
 };

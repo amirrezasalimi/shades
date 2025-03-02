@@ -57,7 +57,7 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
       <div
         className={clsx(
           "top-0 right-0 z-20 fixed bg-white h-screen overflow-y-auto transition-all duration-300",
-          isOpen ? "left-0" : "left-96"
+          isOpen ? "left-0" : "left-full"
         )}
       >
         {isLoading ? (
