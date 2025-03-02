@@ -1,5 +1,4 @@
 import magicoon from "@ui/assets/magicoon.svg";
-import magicoonWhite from "@ui/assets/magicoon-white.svg";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@ui/shared/utils/trpc-client";
 import { NetworkMessages } from "@common/network/messages";
@@ -10,6 +9,7 @@ import useFork from "../../hooks/fork";
 import Spinner from "@ui/shared/components/spinner";
 import { TOOLSTACK } from "@ui/shared/constants/constants";
 import ColorPalette from "../explorer/components/colors-palette";
+import MagicoonWhite from "@ui/assets/magicoon-white";
 
 const GeneratePalette = () => {
   const [prompt, setPrompt] = useState<string>("");
@@ -63,9 +63,9 @@ const GeneratePalette = () => {
         paletteId={selectedPaletteId}
       />
       <div className="before:-top-10 before:left-0 before:absolute before:bg-[url(@ui/assets/lineVector.svg)] before:w-full before:h-full"></div>
-      <div className="flex flex-col justify-center items-center mb-24 pt-14">
-        <img src={magicoon} alt="magicoon icon" width={75} />
-        <div className="my-4 text-[#313131] text-xl">
+      <div className="flex flex-col justify-center items-center mb-12 pt-5">
+        <img src={magicoon} alt="magicoon icon" width={65} />
+        <div className="mt-3 mb-2 text-[#313131] text-xl">
           Generate <span className="text-primary">Ai</span> Color Palettes
         </div>
         <p className="font-normal text-[#686868] text-center text-xs">
@@ -94,14 +94,26 @@ const GeneratePalette = () => {
             <Spinner />
           ) : (
             <>
-              <img src={magicoonWhite} alt="magicoon" className="w-5" />
+              <MagicoonWhite size="22px" />
               <span className="text-[14px]">Generate</span>
+            </>
+          )}
+        </button>
+        <span className="text-[#686868] text-sm font-light my-3.5">or</span>
+        <button className="z-[1] flex justify-center items-center space-x-1 rounded-2xl w-full h-[50px] text-white border border-[#B0B0B0]">
+          {generate.isPending ? (
+            <Spinner />
+          ) : (
+            <>
+              <span className="text-[14px] text-black font">
+                Recent Generated
+              </span>
             </>
           )}
         </button>
       </div>
       <div className="flex justify-center items-center text-[#686868] text-sm">
-        Powered by
+        Power taken from
         <a className="pl-1 text-[#378CF0]" href={TOOLSTACK} target="_blank">
           shades.toolstack.run
         </a>
