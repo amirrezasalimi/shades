@@ -41,12 +41,12 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
         <div
           onClick={() => showBottomSheet(false)}
           className="top-0 right-0 bottom-0 left-0 z-30 fixed bg-black bg-opacity-60"
-        ></div>
+        />
       )}
 
       <div
         className={`fixed z-40 rounded-t-2xl bg-white left-0 right-0 w-full transition duration-200 ease-linear p-6 ${
-          isOpen ? "translate-y-[-200px]" : "translate-y-0"
+          isOpen ? "translate-y-[-270px]" : "translate-y-0"
         }`}
       >
         <div className="flex flex-col">
