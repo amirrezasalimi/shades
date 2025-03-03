@@ -1,116 +1,175 @@
 import { pb_admin } from "~/server/pocketbase";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+
+interface DailyStats {
+  users: number;
+  palettes: number;
+  views: number;
+  forks: number;
+}
 
 const timeRouter = createTRPCRouter({
-  users: publicProcedure.query(({}) => {
-    const users = pb_admin.collection("figma_users").getFullList({
-      sort: "-created",
-    });
-    return users;
-  }),
-  // get last x days stats : users, palettes, views, forks
   stats: publicProcedure
-    .input(
-      z.object({
-        days: z.number(),
-      })
-    )
+    .input(z.object({ days: z.number().positive() }))
     .query(async ({ input: { days } }) => {
-      const users_stats = await pb_admin
-        .collection("figma_users_stats")
-        .getFullList({
-          sort: "-created",
-          perPage: days,
-        });
-      const forks_stats = await pb_admin
-        .collection("figma_forks_stats")
-        .getFullList({
-          sort: "-created",
-          perPage: days,
-        });
-      const views_stats = await pb_admin
-        .collection("figma_views_stats")
-        .getFullList({
-          sort: "-created",
-          perPage: days,
-        });
-      const palettes_stats = await pb_admin
-        .collection("figma_palettes_stats")
-        .getFullList({
-          sort: "-created",
-          perPage: days,
-        });
+      try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        const dateFilter = `created >= '${startDate.toISOString()}'`;
 
-      const daysStats: Record<
-        string,
-        { users: number; palettes: number; views: number; forks: number }
-      > = {};
+        const [palettesDaily, usersDaily, viewsDaily, forksDaily] =
+          await Promise.all([
+            pb_admin.collection("palettes").getList(1, days, {
+              filter: dateFilter,
+              fields: "created",
+              sort: "-created",
+            }),
+            pb_admin.collection("figma_users").getList(1, days, {
+              filter: dateFilter,
+              fields: "created",
+              sort: "-created",
+            }),
+            pb_admin.collection("figma_views").getList(1, days, {
+              filter: dateFilter,
+              fields: "created",
+              sort: "-created",
+            }),
+            pb_admin.collection("figma_forks").getList(1, days, {
+              filter: dateFilter,
+              fields: "created",
+              sort: "-created",
+            }),
+          ]);
 
-      users_stats.forEach((day) => {
-        const dayStat = daysStats[day.created];
-        if (!dayStat) {
-          daysStats[day.created] = {
-            users: day.count,
-            palettes: 0,
-            views: 0,
-            forks: 0,
-          };
-        } else {
-          dayStat.users = day.count;
-        }
-      });
-      forks_stats.forEach((day) => {
-        const dayStat = daysStats[day.created];
-        if (!dayStat) {
-          daysStats[day.created] = {
-            users: 0,
-            palettes: 0,
-            views: 0,
-            forks: day.count,
-          };
-        } else {
-          dayStat.forks = day.count;
-        }
-      });
-      views_stats.forEach((day) => {
-        const dayStat = daysStats[day.created];
-        if (!dayStat) {
-          daysStats[day.created] = {
-            users: 0,
-            palettes: 0,
-            views: day.count,
-            forks: 0,
-          };
-        } else {
-          dayStat.views = day.count;
-        }
-      });
-      console.log(palettes_stats);
-      
-      palettes_stats.forEach((day) => {
-        const dayStat = daysStats[day.created];
-        if (day.figma_user == "") return;
-        if (!dayStat) {
-          daysStats[day.created] = {
-            users: 0,
-            palettes: day.count,
-            views: 0,
-            forks: 0,
-          };
-        } else {
-          dayStat.palettes = day.count;
-        }
-      });
+        const dailyStats = new Map<string, DailyStats>();
 
-      //   convert to array
-      const daysStatsArray = Object.keys(daysStats).map((key) => {
-        return {
-          date: key,
-          ...daysStats[key],
+        // Helper function to aggregate daily counts
+        const aggregateDaily = (
+          items: Array<{ created: string }>,
+          type: keyof DailyStats
+        ) => {
+          items.forEach((item) => {
+            const date = item.created?.split("T")[0];
+            if (date && !dailyStats.has(date)) {
+              dailyStats.set(date, {
+                users: 0,
+                palettes: 0,
+                views: 0,
+                forks: 0,
+              });
+            }
+            if (date) {
+              const stats = dailyStats.get(date)!;
+              stats[type]++;
+            }
+          });
         };
-      });
-      return daysStatsArray.reverse();
+
+        // Aggregate all stats
+        aggregateDaily(palettesDaily.items, "palettes");
+        aggregateDaily(usersDaily.items, "users");
+        aggregateDaily(viewsDaily.items, "views");
+        aggregateDaily(forksDaily.items, "forks");
+
+        return Array.from(dailyStats.entries())
+          .map(([date, stats]) => ({ date, ...stats }))
+          .sort((a, b) => b.date.localeCompare(a.date));
+      } catch (error) {
+        console.error("Stats Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch stats",
+        });
+      }
+    }),
+
+  detailedStats: publicProcedure
+    .input(z.object({ days: z.number().positive() }))
+    .query(async ({ input: { days } }) => {
+      try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        const dateFilter = `created >= '${startDate.toISOString()}'`;
+
+        const [palettes, users, views, forks] = await Promise.all([
+          pb_admin.collection("palettes").getFullList({
+            filter: dateFilter,
+            fields: "id,referral,model_id,created",
+          }),
+          pb_admin.collection("figma_users").getFullList({
+            filter: dateFilter,
+            fields: "id",
+          }),
+          pb_admin.collection("figma_views").getFullList({
+            filter: dateFilter,
+            fields: "id",
+          }),
+          pb_admin.collection("figma_forks").getFullList({
+            filter: dateFilter,
+            fields: "id",
+          }),
+        ]);
+
+        // Process referrals
+        const referralCounts = palettes.reduce<Record<string, number>>(
+          (acc, item) => {
+            const ref = item.referral ?? "direct";
+            acc[ref] = (acc[ref] ?? 0) + 1;
+            return acc;
+          },
+          {}
+        );
+
+        // Process models
+        const modelCounts = palettes.reduce<Record<string, number>>(
+          (acc, item) => {
+            const modelId = item.model_id ?? "unknown";
+            acc[modelId] = (acc[modelId] ?? 0) + 1;
+            return acc;
+          },
+          {}
+        );
+
+        // Calculate growth data
+        const sortedPalettes = [...palettes].sort(
+          (a, b) =>
+            new Date(a.created).getTime() - new Date(b.created).getTime()
+        );
+
+        const growthData = sortedPalettes.reduce<
+          Array<{ date: string; total: number }>
+        >((acc, _, index) => {
+          const date = sortedPalettes[index].created.split("T")[0];
+          const lastTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
+
+          if (!acc.length || acc[acc.length - 1].date !== date) {
+            acc.push({ date, total: lastTotal + 1 });
+          } else {
+            acc[acc.length - 1].total++;
+          }
+          return acc;
+        }, []);
+
+        return {
+          totals: {
+            palettes: palettes.length,
+            users: users.length,
+            views: views.length,
+            forks: forks.length,
+          },
+          referral: referralCounts,
+          models: modelCounts,
+          growth: growthData,
+        };
+      } catch (error) {
+        console.error("Detailed Stats Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch detailed stats",
+        });
+      }
     }),
 });
 

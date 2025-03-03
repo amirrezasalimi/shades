@@ -1,132 +1,155 @@
 "use client";
 import { Spinner } from "@nextui-org/react";
-import { useState } from "react";
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
 } from "recharts";
 import { api } from "~/shared/utils/trpc/react";
+import { useState } from "react";
+import { TimeframeSelector } from "./components/TimeframeSelector";
+import { StatsCard } from "./components/StatsCard";
+import { ModelUsageChart } from "./components/ModelUsageChart";
+import { GrowthChart } from "./components/GrowthChart";
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: {
-  active: boolean;
-  payload: any;
-  label: string;
-}) => {
-  if (active && payload?.length) {
-    let date = payload?.[0]?.value ?? "";
-    date = date;
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
+
+type MetricTotals = {
+  users: number;
+  palettes: number;
+  views: number;
+  forks: number;
+};
+
+const Stats = () => {
+  const [selectedDays, setSelectedDays] = useState(30);
+  const stats = api.time.stats.useQuery({ days: selectedDays });
+  const detailedStats = api.time.detailedStats.useQuery({ days: selectedDays });
+
+  if (stats.isLoading || detailedStats.isLoading) {
     return (
-      <div className="border-gray-700 bg-[#212121]/80 backdrop-blur-md p-2 border rounded-md text-white">
-        <p className="label">{label}</p>
-        <p className="label">
-          {payload[0].name}: {date}
-        </p>
-        <p className="label">
-          {payload[1].name}: {payload[1].value}
-        </p>
-        <p className="label">
-          {payload[2].name}: {payload[2].value}
-        </p>
-        <p className="label">
-          {payload[3].name}: {payload[3].value}
-        </p>
+      <div className="flex justify-center items-center bg-black/95 min-h-screen">
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
 
-  return null;
-};
-
-const Stats = () => {
-  const days = 30;
-  const stats = api.time.stats.useQuery(
-    {
-      days,
-    },
-    {}
-  );
-  const data = stats.data;
-
-  const formatDate = (utc: string) => {
-    // format like: 10-01
-    return utc.slice(5, 10);
-  };
-  // console.log(data);
-
   return (
-    <div className="flex justify-center items-center bg-[#212121] w-screen h-screen text-white">
-      <div className="w-full max-w-4xl h-1/2">
-        <div className="flex items-center gap-2 font-bold text-3xl">
-          <h1>Last</h1>
-          <h1 className="bg-[#9656ef] px-2">{days} days</h1>
-          <h1>Stats</h1>
+    <div className="bg-black/95 min-h-screen text-white">
+      {/* Header Section */}
+      <div className="top-0 z-10 sticky bg-black/40 backdrop-blur-xl border-white/10 border-b">
+        <div className="mx-auto px-6 py-4 max-w-[90rem]">
+          <div className="flex md:flex-row flex-col justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400 font-extrabold text-transparent text-4xl">
+                Statistics
+              </h1>
+              <p className="mt-1 text-gray-400">
+                Analyzing the last {selectedDays} days of activity
+              </p>
+            </div>
+            <TimeframeSelector
+              selected={selectedDays}
+              onChange={setSelectedDays}
+            />
+          </div>
         </div>
-        <div className="flex justify-center items-center mt-4 size-full">
-          {stats.isLoading ? (
-            <Spinner />
-          ) : (
-            <ResponsiveContainer className={"size-full"}>
-              <BarChart
-                accessibilityLayer
-                data={data}
-                className="*:outline-none"
-              >
-                <Tooltip
-                  cursor={{ fill: "rgba(0,0,0,0.2)" }}
-                  // @ts-ignore
-                  content={<CustomTooltip />}
-                />
-                <XAxis
-                  dataKey="date"
-                  interval={1}
-                  // rotate={-45}
-                  tickLine={false}
-                  // tickMargin={10}
+      </div>
 
-                  axisLine={false}
-                  tickFormatter={formatDate}
-                />
-                <Bar
-                  name="users"
-                  dataKey="users"
-                  stackId="a"
-                  fill="#B388FF"
-                  radius={[0, 0, 4, 4]}
-                />{" "}
-                <Bar
-                  name="forks"
-                  dataKey="forks"
-                  stackId="a"
-                  fill="#58D9F9"
-                  radius={[0, 0, 0, 0]}
-                />
-                <Bar
-                  name="views"
-                  dataKey="views"
-                  stackId="a"
-                  fill="#4C53FA"
-                  radius={[0, 0, 0, 0]}
-                />
-                <Bar
-                  name="palettes"
-                  dataKey="palettes"
-                  stackId="a"
-                  fill="#A6C42F"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Legend />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+      {/* Main Content */}
+      <div className="space-y-8 mx-auto px-6 py-8 max-w-[90rem]">
+        {/* Summary Cards */}
+        <div className="gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {["Users", "Palettes", "Views", "Forks"].map((metric) => (
+            <StatsCard
+              key={metric}
+              title={metric}
+              className="bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 transition-colors"
+            >
+              <div className="bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400 font-bold text-transparent text-4xl">
+                {detailedStats.data?.totals[
+                  metric.toLowerCase() as keyof MetricTotals
+                ] ?? 0}
+              </div>
+            </StatsCard>
+          ))}
+        </div>
+
+        {/* Charts Grid */}
+        <div className="gap-6 grid grid-cols-1 lg:grid-cols-2">
+          <StatsCard
+            title="Activity Overview"
+            className="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 border border-white/10"
+          >
+            <div className="h-[400px]">
+              <ResponsiveContainer>
+                <BarChart data={stats.data} className="*:outline-none">
+                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatDate}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#9ca3af" }}
+                  />
+                  <Bar
+                    dataKey="users"
+                    stackId="a"
+                    fill="#8b5cf6"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="forks"
+                    stackId="a"
+                    fill="#3b82f6"
+                    radius={[0, 0, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="views"
+                    stackId="a"
+                    fill="#06b6d4"
+                    radius={[0, 0, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="palettes"
+                    stackId="a"
+                    fill="#22c55e"
+                    radius={[0, 0, 4, 4]}
+                  />
+                  <Legend iconType="circle" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </StatsCard>
+
+          <StatsCard
+            title="Model Usage"
+            className="bg-white/5 backdrop-blur-sm p-6 border border-white/10"
+          >
+            <ModelUsageChart data={detailedStats.data?.models ?? {}} />
+          </StatsCard>
+
+          <StatsCard
+            title="Traffic Sources"
+            className="bg-white/5 backdrop-blur-sm p-6 border border-white/10"
+          >
+            <ModelUsageChart data={detailedStats.data?.referral ?? {}} />
+          </StatsCard>
+
+          <StatsCard
+            title="Palette Growth"
+            className="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 border border-white/10"
+          >
+            <GrowthChart data={detailedStats.data?.growth ?? []} />
+          </StatsCard>
         </div>
       </div>
     </div>

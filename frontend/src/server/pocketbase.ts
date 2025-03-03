@@ -14,8 +14,8 @@ const pbInstance = (token?: string) => {
       return {
         url,
         options,
-      }
-    }
+      };
+    };
   }
   return _;
 };
