@@ -1,4 +1,4 @@
-const ColorWheel = ({
+const ColorWheelIcon = ({
   color = "#808080",
   size = "25px",
 }: {
@@ -31,4 +31,4 @@ const ColorWheel = ({
   );
 };
 
-export default ColorWheel;
+export default ColorWheelIcon;
