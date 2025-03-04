@@ -141,12 +141,14 @@ const timeRouter = createTRPCRouter({
         const growthData = sortedPalettes.reduce<
           Array<{ date: string; total: number }>
         >((acc, _, index) => {
-          const date = sortedPalettes[index].created.split("T")[0];
-          const lastTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
+          if (!sortedPalettes?.[index]) return acc;
+          const date = sortedPalettes?.[index]?.created?.split("T")[0];
+          const lastTotal = acc.length > 0 ? acc?.[acc.length - 1]?.total : 0;
 
-          if (!acc.length || acc[acc.length - 1].date !== date) {
-            acc.push({ date, total: lastTotal + 1 });
+          if (!acc.length || acc?.[acc?.length - 1]?.date !== date) {
+            acc.push({ date: date ?? "unknown", total: (lastTotal ?? 0) + 1 });
           } else {
+            // @ts-ignore
             acc[acc.length - 1].total++;
           }
           return acc;
