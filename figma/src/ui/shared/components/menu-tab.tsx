@@ -1,16 +1,23 @@
-import ColorWheel from "@ui/assets/color-wheel";
+import ColorWheelIcon from "@ui/assets/color-wheel";
 import MagicoonWhite from "@ui/assets/magicoon-white";
 import clsx from "clsx";
 
 const MenuTab = ({
   tab,
   setTab,
+  style,
 }: {
   tab: string;
   setTab: (value: string) => void;
+  style?: string;
 }) => {
   return (
-    <div className="relative z-10 flex items-center mt-5 pb-2 rounded-2xl gap-x-5">
+    <div
+      className={clsx(
+        "relative z-10 flex items-center mt-5 pb-2 rounded-2xl gap-x-5",
+        style
+      )}
+    >
       <div
         className={clsx(
           "h-0.5 bg-primary absolute top-full transition-transform",
@@ -39,7 +46,7 @@ const MenuTab = ({
         )}
         onClick={() => setTab("colorWheel")}
       >
-        <ColorWheel
+        <ColorWheelIcon
           size="18px"
           color={tab === "colorWheel" ? "#ff473b" : "#808080"}
         />
