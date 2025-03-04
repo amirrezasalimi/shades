@@ -1,139 +1,247 @@
-// credit: https://javisperez.github.io/tailwindcolorshades
 import colorNamer from "color-namer";
-import convert from "color-convert";
 
 export type Palette = {
-    name: string;
-    colors: Record<number, string>
+  name: string;
+  colors: Record<number, string>;
 };
 
-const CMY_HUES = [180, 300, 60];
-const RGB_HUES = [360, 240, 120, 0];
-
-export function getTextColor(color: string): "#FFF" | "#333" {
-    // @ts-ignore
-    const rgbColor = convert.hex.rgb(color);
-
-    if (!rgbColor) {
-        return "#333";
-    }
-
-    const [r, g, b] = rgbColor;
-    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-    return luma < 120 ? "#FFF" : "#333";
-}
-
-function hueShift(hues: Array<number>, hue: number, intensity: number) {
-    const closestHue = (hues.sort((a, b) => (Math.abs(a - hue) - Math.abs(b - hue)))[0]) ?? 0,
-        hueShift = closestHue - hue;
-    return Math.round(intensity * hueShift * 0.5);
-}
-
-function lighten(hex: string, intensity: number): string {
-    if (!hex) {
-        return "";
-    }
-
-    const [h, s, v] = convert.hex.hsv(hex);
-    const hue = h + hueShift(CMY_HUES, h, intensity);
-    const saturation = s - Math.round(s * intensity);
-    const value = v + Math.round((100 - v) * intensity);
-
-    return `#${convert.hsv.hex([hue, saturation, value])}`;
-}
-
-function darken(hex: string, intensity: number): string {
-    if (!hex) {
-        return "";
-    }
-
-    const inverseIntensity = (1 - intensity);
-    const [h, s, v] = convert.hex.hsv(hex);
-    const hue = h + hueShift(RGB_HUES, h, inverseIntensity);
-    const saturation = s + Math.round((100 - s) * inverseIntensity);
-    const value = v - Math.round(v * inverseIntensity);
-
-    return `#${convert.hsv.hex([hue, saturation, value])}`;
-}
-
-export function isValidHexColorCode(str: string) {
-    return /^#([0-9A-Fa-f]{3}){1,2}$/.test(str);
-}
-
 export function getColorName(color: string): string {
-    const cn = colorNamer(`#${color}`.replace("##", "#")).ntc[0];
-    const name = cn?.name ?? "Unknown";
-    const sanitizedName = name
-        .replace(/['/]/gi, "")
-        .replace(/\s+/g, "-")
-        .toLowerCase();
+  const cn = colorNamer(`#${color}`.replace("##", "#")).ntc[0];
+  const name = cn?.name ?? "Unknown";
+  const sanitizedName = name
+    .replace(/['/]/gi, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase();
 
-    return sanitizedName;
+  return sanitizedName;
 }
 
-export function sixDigitsColorHex(hexColor: string) {
-    const hexValue = hexColor.replace('#', '')
-    return `#${(hexValue.length === 3 ? hexValue.replace(/(.)/g, '$1$1') : hexValue.padEnd(6, '0'))}`;
-}
+const generateShades = (hex: string): Record<number, string> => {
+  // Validate hex input
+  if (!hex) {
+    console.error("Invalid hex color provided");
+    return {}; // Return empty object if hex is invalid
+  }
 
-function makeShades(baseColor?: string): Palette | undefined {
-    if (!baseColor) {
-        return
+  // Normalize hex input
+  hex = hex.replace(/^#/, "");
+  if (hex.length === 3 && typeof hex === "string") {
+    const [h1 = "", h2 = "", h3 = ""] = hex;
+    hex = h1 + h1 + h2 + h2 + h3 + h3;
+  }
+
+  // Validate hex format
+  if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+    console.error("Invalid hex color format");
+    return {};
+  }
+
+  // Convert hex to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Convert RGB to HSL
+  const rgbToHsl = (
+    r: number,
+    g: number,
+    b: number
+  ): [number, number, number] => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
+      }
+
+      h /= 6;
     }
 
-    const fullColorCode = sixDigitsColorHex(baseColor)
+    return [h, s, l];
+  };
 
-    const name = getColorName(fullColorCode);
+  // Convert HSL to RGB
+  const hslToRgb = (
+    h: number,
+    s: number,
+    l: number
+  ): [number, number, number] => {
+    let r, g, b;
 
-    const response: Palette = {
-        name,
-        colors: {
-            500: fullColorCode
-        }
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      const hue2rgb = (p: number, q: number, t: number): number => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  };
+
+  // Convert RGB to hex
+  const rgbToHex = (r: number, g: number, b: number): string => {
+    const toHex = (c: number): string => {
+      const hex = c.toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
     };
 
-    const intensityMap: Record<number, number> = {
-        50: 0.95,
-        100: 0.9,
-        200: 0.75,
-        300: 0.6,
-        400: 0.3,
-        600: 0.9,
-        700: 0.75,
-        800: 0.6,
-        900: 0.45,
-        950: 0.29
-    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
 
-    [50, 100, 200, 300, 400].forEach(level => {
-        response.colors[level] = lighten(fullColorCode, intensityMap?.[level] ?? 1);
-    });
+  const [h, s, l] = rgbToHsl(r, g, b);
 
-    [600, 700, 800, 900, 950].forEach(level => {
-        response.colors[level] = darken(fullColorCode, intensityMap[level] ?? 1);
-    });
+  // Generate shades by adjusting lightness
+  const shades: Record<number, string> = {};
 
-    return response;
-}
+  // Define the shade levels from 950 (darkest) to 50 (lightest)
+  const shadeLevels = [950, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50];
 
+  // Create a mapping from shade level to lightness value
+  // With special handling for very light or very dark colors
+  const shadeToLightness = (shade: number): number => {
+    // Determine if the base color is very light or very dark
+    const isVeryLight = l > 0.9;
+    const isVeryDark = l < 0.1;
 
-export default function generateShades(hexColor: string): Record<number, string> {
-    const shades = makeShades(hexColor);
-    return shades?.colors ?? {};
-}
+    // Handle special cases for extreme colors
+    if (isVeryLight) {
+      // For very light colors (like #fafafa), adjust the reference point
+      // Consider the input color as shade 100 instead of 500
+      if (shade === 100) {
+        return l; // Keep original lightness for shade 100
+      } else if (shade < 100) {
+        // For shade 50, go slightly lighter but cap at 0.98 to avoid pure white
+        return Math.min(0.98, l + 0.02);
+      } else {
+        // For darker shades, create a better distribution from light to dark
+        // Map 100->l, 950->0.05
+        const darkRatio = (shade - 100) / 850;
+        return l * (1 - darkRatio) + 0.05 * darkRatio;
+      }
+    } else if (isVeryDark) {
+      // For very dark colors, consider the input color as shade 900
+      // Similar logic but inverted from the light case
+      if (shade === 900) {
+        return l;
+      } else if (shade > 900) {
+        return Math.max(0.02, l - 0.02); // Slightly darker but avoid pure black
+      } else {
+        // For lighter shades, create a better distribution
+        const lightRatio = (900 - shade) / 850;
+        return l * (1 - lightRatio) + 0.95 * lightRatio;
+      }
+    } else {
+      // Normal case - input is middle range color (use as 500)
+      if (shade === 500) {
+        return l;
+      } else if (shade > 500) {
+        const darkRatio = (shade - 500) / 450;
+        return l * (1 - darkRatio) + 0.05 * darkRatio;
+      } else {
+        const lightRatio = (500 - shade) / 450;
+        return l * (1 - lightRatio) + 0.95 * lightRatio;
+      }
+    }
+  };
 
-const hexToRgb = (hex: string) => {
-    const bigint = parseInt(hex.replace("#", ""), 16);
+  // Generate the shades
+  shadeLevels.forEach((shade) => {
+    // Calculate new lightness for this shade
+    const newLightness = shadeToLightness(shade);
+
+    // Preserve hue and adjust saturation
+    let newSaturation = s;
+
+    // For very light colors, boost saturation slightly in middle shades
+    // to maintain color identity
+    if (l > 0.9 && shade >= 300 && shade <= 700) {
+      newSaturation = Math.min(1, s * 1.2);
+    } else if (shade >= 800) {
+      // Slightly reduce saturation for very dark shades
+      newSaturation = Math.max(0, s * 0.9);
+    } else if (shade <= 200) {
+      // Slightly reduce saturation for very light shades
+      newSaturation = Math.max(0, s * 0.8);
+    }
+
+    // Convert back to RGB and then to hex
+    const [newR, newG, newB] = hslToRgb(h, newSaturation, newLightness);
+    shades[shade] = rgbToHex(newR, newG, newB);
+  });
+
+  return shades;
+};
+
+const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
+  // Validate hex input
+  if (!hex) {
+    console.error("Invalid hex color provided");
+    return { r: 0, g: 0, b: 0 }; // Return black as fallback
+  }
+
+  const normalizedHex = hex.replace(/^#/, "");
+
+  // Validate hex format
+  if (!/^[0-9A-Fa-f]{3,6}$/.test(normalizedHex)) {
+    console.error("Invalid hex color format");
+    return { r: 0, g: 0, b: 0 }; // Return black as fallback
+  }
+
+  try {
+    const bigint = parseInt(normalizedHex, 16);
     return {
-        r: (bigint >> 16) & 255,
-        g: (bigint >> 8) & 255,
-        b: bigint & 255,
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255,
     };
-}
+  } catch (error) {
+    console.error("Error parsing hex color:", error);
+    return { r: 0, g: 0, b: 0 }; // Return black as fallback
+  }
+};
+
 export const colorContrast = (color: string): string => {
-    // dark or light
-    const { r, g, b } = hexToRgb(color);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 125 ? "#000000" : "#ffffff";
-}
+  // Validate input
+  if (!color) {
+    return "#000000"; // Default to black text if no color provided
+  }
+
+  // dark or light
+  const rgb = hexToRgb(color);
+  const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+  return brightness > 125 ? "#000000" : "#ffffff";
+};
+
+export default generateShades;

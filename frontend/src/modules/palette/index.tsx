@@ -52,14 +52,12 @@ const Palette = ({
     }
   }, [prompt]);
 
-  console.log("palette", fullData);
-
   return (
     <>
-      <div className="flex w-full flex-col">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col w-full">
+        <div className="flex justify-between items-center">
           {palette.isPending && (
-            <div className="flex w-full justify-center py-8">
+            <div className="flex justify-center py-8 w-full">
               <Spinner />
             </div>
           )}
@@ -71,18 +69,18 @@ const Palette = ({
                     <FaArrowLeft size={24} />
                   </Button>
                 </Link>
-                <h2 className="bg-gradient-to-r from-[#363636] to-[#7d7d7d] bg-clip-text text-lg font-bold text-transparent md:text-3xl">
+                <h2 className="bg-clip-text bg-gradient-to-r from-[#363636] to-[#7d7d7d] font-bold text-transparent text-lg md:text-3xl">
                   {palette.data?.prompt}
                 </h2>
               </div>
             </>
           )}
         </div>
-        <div className="flex w-full flex-col mt-10 relative">
+        <div className="relative flex flex-col mt-10 w-full">
           <Link
             href="https://www.figma.com/community/plugin/1385705522724184971/shades-ai-color-palette-generator"
             target="_blank"
-            className="absolute top-0 right-0 space-x-2 group rounded-2xl flex items-center bg-[#F3F3F3] px-4 py-2 hover:bg-[#E9E9E9] transition-colors border border-[#E9E9E9] max-sm:w-full max-sm:justify-center max-sm:top-16"
+            className="group top-0 max-sm:top-16 right-0 absolute flex max-sm:justify-center items-center space-x-2 bg-[#F3F3F3] hover:bg-[#E9E9E9] px-4 py-2 border border-[#E9E9E9] rounded-2xl max-sm:w-full transition-colors"
           >
             <Image src={figmaIcon} alt="figma icon" />
             <div className="">Open in Figma</div>
@@ -107,17 +105,17 @@ const Palette = ({
                 <CardBody>
                   <div
                     style={{ backgroundColor: fullData?.secondary?.[200] }}
-                    className="flex items-center flex-wrap flex-1 gap-3 min-[420px]:p-7 p-3 rounded-3xl"
+                    className="flex flex-wrap flex-1 items-center gap-3 p-3 min-[420px]:p-7 rounded-3xl"
                   >
-                    <div className="w-full md:max-w-4xl mx-auto">
-                      <div className="flex md:space-x-4 flex-col md:flex-row items-center md:items-end mb-5 w-full">
+                    <div className="mx-auto w-full md:max-w-4xl">
+                      <div className="flex md:flex-row flex-col items-center md:items-end md:space-x-4 mb-5 w-full">
                         <Chat color={fullData} />
-                        <div className="flex flex-col max-[420px]:w-full space-y-4">
+                        <div className="flex flex-col space-y-4 max-[420px]:w-full">
                           <TopSeller color={fullData} />
                           <NewUser color={fullData} />
                         </div>
                       </div>
-                      <div className="flex items-center md:items-end justify-between w-full flex-col md:flex-row space-y-5 md:space-y-0">
+                      <div className="flex md:flex-row flex-col justify-between items-center md:items-end space-y-5 md:space-y-0 w-full">
                         <BuyTicket color={fullData} />
                         <CreateAccount color={fullData} />
                         <DownloadApp color={fullData} />
