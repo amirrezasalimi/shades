@@ -10,6 +10,7 @@ import Spinner from "@ui/shared/components/spinner";
 import { TOOLSTACK } from "@ui/shared/constants/constants";
 import ColorPalette from "../explorer/components/colors-palette";
 import MagicoonWhite from "@ui/assets/magicoon-white";
+import Recent from "../recent";
 
 const GeneratePalette = () => {
   const [prompt, setPrompt] = useState<string>("");
@@ -35,6 +36,7 @@ const GeneratePalette = () => {
   const [selectedPaletteId, setSelectedPaletteId] = useState<string | null>(
     null
   );
+  const [showRecentModal, setShowRecentModal] = useState(false);
 
   const submit = () => {
     // not less than 4 characters
@@ -62,6 +64,8 @@ const GeneratePalette = () => {
         isOpen={showPaletteModal}
         paletteId={selectedPaletteId}
       />
+      <Recent isOpen={showRecentModal} showModal={setShowRecentModal} />
+
       <div className="before:-top-10 before:left-0 before:absolute before:bg-[url(@ui/assets/lineVector.svg)] before:w-full before:h-full"></div>
       <div className="flex flex-col justify-center items-center mb-12 pt-5">
         <img src={magicoon} alt="magicoon icon" width={65} />
@@ -100,7 +104,10 @@ const GeneratePalette = () => {
           )}
         </button>
         <span className="text-[#686868] text-sm font-light my-3.5">or</span>
-        <button className="z-[1] flex justify-center items-center space-x-1 rounded-2xl w-full h-[50px] text-white border border-[#B0B0B0]">
+        <button
+          className="z-[1] flex justify-center items-center space-x-1 rounded-2xl w-full h-[50px] text-white border border-[#B0B0B0]"
+          onClick={() => setShowRecentModal(true)}
+        >
           {generate.isPending ? (
             <Spinner />
           ) : (

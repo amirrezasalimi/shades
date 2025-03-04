@@ -3,10 +3,11 @@ import Explorer from "./components/explorer";
 import useView from "./hooks/view";
 import GeneratePalette from "./components/generate";
 import MagicoonWhite from "@ui/assets/magicoon-white";
-import ColorWheel from "@ui/assets/color-wheel";
 import { clsx } from "clsx";
-import Header from "./components/header";
+import Header from "../../shared/components/header";
 import MenuTab from "@ui/shared/components/menu-tab";
+import Recent from "./components/recent";
+import ColorWheel from "./components/color-wheel";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("aiColors");
@@ -17,7 +18,7 @@ const Home = () => {
         <Header />
         <MenuTab tab={activeTab} setTab={setActiveTab} />
       </div>
-      {activeTab === "colorWheel" && <Explorer />}
+      {activeTab === "colorWheel" && <ColorWheel style="mt-0" />}
       {activeTab === "aiColors" && <GeneratePalette />}
     </div>
   );
