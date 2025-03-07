@@ -47,7 +47,7 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
 
       <div
         className={clsx(
-          "fixed z-40 rounded-t-2xl bg-white left-0 right-0 w-full transition-transform duration-200 ease-linear p-6",
+          "right-0 left-0 z-40 fixed bg-white p-6 rounded-t-2xl w-full transition-transform duration-200 ease-linear",
           isOpen ? "animate-slide-up" : "animate-slide-down"
         )}
       >
@@ -64,8 +64,16 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
               <img width={24} src={x} alt="x icon" />
             </div>
           </div>
-          <div className="flex justify-between items-center mt-6 mb-4">
-            <div className="">
+          <div
+            className="flex justify-between items-center mt-6 mb-4 cursor-pointer"
+            onClick={() => {
+              setSettings.mutate({
+                addToStyle: !settingsQuery.data?.addToStyle,
+                addToVariables: !!settingsQuery.data?.addToVariables,
+              });
+            }}
+          >
+            <div>
               <div className="font-medium">Add color to the Style</div>
               <div className="font-light text-gray-400 text-xs">
                 It helps you add all the colors to the styles.
@@ -81,8 +89,16 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
               }}
             />
           </div>
-          <div className="flex justify-between items-center">
-            <div className="">
+          <div
+            className="flex justify-between items-center cursor-pointer"
+            onClick={() => {
+              setSettings.mutate({
+                addToStyle: !!settingsQuery.data?.addToStyle,
+                addToVariables: !settingsQuery.data?.addToVariables,
+              });
+            }}
+          >
+            <div>
               <div className="font-medium">Add color to the Variable</div>
               <div className="font-light text-gray-400 text-xs">
                 This feature adds all colors to the tokens.
