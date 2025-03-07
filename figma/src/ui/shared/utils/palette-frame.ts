@@ -276,11 +276,6 @@ const createPaletteFrame = async (props: Props) => {
     return frame;
   };
 
-  if (props.addToStyles) {
-    statusFrame.appendChild(createStatus("Added colors To styles"));
-    statusFrame.appendChild(createStatus("Added color To Variable"));
-  }
-
   head.appendChild(statusFrame);
   frame.appendChild(head);
 
@@ -632,9 +627,7 @@ const createPaletteFrame = async (props: Props) => {
   figma.viewport.scrollAndZoomIntoView([frame]);
 
   const allColorsKeys = props.keyAsLabel
-    ? Object.values(props.palette).map((color) =>
-        color.name.toLowerCase().replaceAll(" ", "-")
-      )
+    ? Object.keys(props.palette)
     : [
         "primary",
         "secondary",
@@ -644,24 +637,25 @@ const createPaletteFrame = async (props: Props) => {
         "warning",
         "info",
       ];
-  const findColorRealKeyByName = (_name: string) => {
+  const findColorObjByName = (_name: string) => {
     return Object.values(props.palette).find(
       (color) => color.name.toLowerCase().replaceAll(" ", "-") === _name
-    )?.hex;
+    );
   };
   // generate styles
   const generateStyles = async () => {
     // name format: type/shade_code color
     for (const colorKey of allColorsKeys) {
-      const key = findColorRealKeyByName(colorKey);
-      if (!key) {
+      const obj = props.palette[colorKey];
+      if (!obj) {
         console.error(`Color key not found for ${colorKey}`);
         continue;
       }
+      const prefixName =
+        colorKey.indexOf("#") > -1 ? obj.name.toLowerCase() : colorKey;
 
-      const colorObj = props.palette[key];
-      for (const [shade_code, color] of Object.entries(colorObj.shades)) {
-        const styleName = `${colorKey}/${shade_code} ${color}`;
+      for (const [shade_code, color] of Object.entries(obj.shades)) {
+        const styleName = `${prefixName}/${shade_code} ${color}`;
         const style = figma.createPaintStyle();
         style.name = styleName;
         const rgb_color = convertHexToRgbRange(color);
@@ -685,18 +679,20 @@ const createPaletteFrame = async (props: Props) => {
     const collection =
       collections.find((collection) => collection.name === collectionId) ??
       figma.variables.createVariableCollection(collectionId);
+
     for (const colorKey of allColorsKeys) {
-      const key = findColorRealKeyByName(colorKey);
-      if (!key) {
+      const obj = props.palette[colorKey];
+      if (!obj) {
         console.error(`Color key not found for ${colorKey}`);
         continue;
       }
 
-      const colorObj = props.palette[key];
-      for (const [shade_code, color] of Object.entries(colorObj.shades)) {
+      const prefixName =
+        colorKey.indexOf("#") > -1 ? obj.name.toLowerCase() : colorKey;
+      for (const [shade_code, color] of Object.entries(obj.shades)) {
         // check exists
         const exists = await figma.variables.getVariableByIdAsync(
-          `${colorKey}/${shade_code}`
+          `${prefixName}/${shade_code}`
         );
         if (exists) {
           continue;
@@ -722,17 +718,17 @@ const createPaletteFrame = async (props: Props) => {
   const settings = (await figma.clientStorage.getAsync(
     "settings"
   )) as PluginSettings | null;
-  const addToStyle = settings?.addToStyle ?? true;
   const addToVariables = !!settings?.addToVariables;
-  if (addToStyle && props.addToStyles) {
+  const addToStyles = !!settings?.addToStyle;
+  if (addToStyles) {
     await generateStyles();
     figma.notify("Palette Styles Created 🎉");
-    if (addToVariables) {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-    }
+    statusFrame.appendChild(createStatus("Added Palette To Styles"));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   }
-  if (addToVariables && props.addToStyles) {
+  if (addToVariables) {
     await generateVariables();
+    statusFrame.appendChild(createStatus("Added Palette To Variables"));
     figma.notify("Palette Variables Created 🎉");
   }
 };
