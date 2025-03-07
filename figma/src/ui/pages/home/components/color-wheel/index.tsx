@@ -17,6 +17,7 @@ import { copyClipboard } from "@ui/shared/hooks/copy-clipboard";
 import { NetworkMessages } from "@common/network/messages";
 import { ColorPalette } from "@common/models/palette";
 import Dropdown from "@ui/shared/components/dropdown";
+import makeId from "@ui/shared/utils/make-id";
 
 const ColorWheel = ({ style }: { style?: string }) => {
   const [color, setColor] = useState("#6366f1");
@@ -98,7 +99,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
         ),
         description: `This color palette is based on the ${primaryColor} color, providing a vibrant and harmonious set of colors for a modern and sophisticated design. The palette includes a range of ${harmonyType} hues that work well together across various UI elements.`,
         fork_count: 0,
-        id: "",
+        id: makeId(10),
         prompt: "",
         fullColors,
         keyAsLabel: true,
