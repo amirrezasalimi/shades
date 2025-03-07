@@ -637,11 +637,7 @@ const createPaletteFrame = async (props: Props) => {
         "warning",
         "info",
       ];
-  const findColorObjByName = (_name: string) => {
-    return Object.values(props.palette).find(
-      (color) => color.name.toLowerCase().replaceAll(" ", "-") === _name
-    );
-  };
+
   // generate styles
   const generateStyles = async () => {
     // name format: type/shade_code color

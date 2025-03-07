@@ -170,11 +170,6 @@ const ColorWheel = ({ style }: { style?: string }) => {
               <input
                 type="text"
                 maxLength={7}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsPickerOpen(true);
-                }}
                 value={value.replace("#", "")}
                 onChange={(e) => colorValue(e.target.value)}
                 className="p-2 pl-[3.7rem] border-[#b0b0b0] border-[0.5px] rounded-2xl focus:outline-none w-full h-full"
