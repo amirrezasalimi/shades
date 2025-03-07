@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import useFork from "../../hooks/fork";
 import { useInView } from "react-intersection-observer";
 import arrowImport from "@ui/assets/arrow-import.svg";
-import clsx from "clsx";
-import Spinner from "@ui/shared/components/spinner";
 import ColorPalette from "./components/colors-palette";
 
 const Item = ({
@@ -66,7 +64,13 @@ const SkeletonItem = () => (
   </div>
 );
 
-const Explorer = () => {
+const Explorer = ({
+  showPaletteModal,
+  setShowColorModal,
+}: {
+  showPaletteModal: boolean;
+  setShowColorModal: (value: boolean) => void;
+}) => {
   const fork = useFork();
   const [page, setPage] = useState(1);
   const [palettes, setPalettes] = useState<PaletteFull[]>([]);
@@ -103,7 +107,6 @@ const Explorer = () => {
 
   const baseColors = ["primary", "secondary", "neutral", "background", "text"];
 
-  const [showPaletteModal, setShowColorModal] = useState(false);
   const [selectedPaletteId, setSelectedPaletteId] = useState<string>("");
 
   const openItem = (paletteId: string) => {
@@ -112,7 +115,7 @@ const Explorer = () => {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-custom pt-20">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-custom">
       <ColorPalette
         showModal={setShowColorModal}
         isOpen={showPaletteModal}

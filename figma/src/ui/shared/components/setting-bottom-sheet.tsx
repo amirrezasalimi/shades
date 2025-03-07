@@ -1,10 +1,11 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect } from "react";
 import settings from "@ui/assets/settings.svg";
 import x from "@ui/assets/x-icon.svg";
 import ToggleSwitch from "@ui/shared/components/toggle-switch";
 import { NetworkMessages } from "@common/network/messages";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PluginSettings } from "@common/models/settings";
+import clsx from "clsx";
 
 interface Toggle {
   isOpen: boolean;
@@ -45,9 +46,10 @@ const Setting: FC<Toggle> = ({ showBottomSheet, isOpen }) => {
       )}
 
       <div
-        className={`fixed z-40 rounded-t-2xl bg-white left-0 right-0 w-full transition duration-200 ease-linear p-6 ${
-          isOpen ? "translate-y-[-270px]" : "translate-y-0"
-        }`}
+        className={clsx(
+          "fixed z-40 rounded-t-2xl bg-white left-0 right-0 w-full transition-transform duration-200 ease-linear p-6",
+          isOpen ? "animate-slide-up" : "animate-slide-down"
+        )}
       >
         <div className="flex flex-col">
           <div className="flex justify-between items-center">

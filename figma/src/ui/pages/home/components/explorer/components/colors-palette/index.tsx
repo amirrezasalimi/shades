@@ -9,17 +9,25 @@ import angleLeft from "@ui/assets/angle-left.svg";
 import settings from "@ui/assets/settings.svg";
 import useFork from "@ui/pages/home/hooks/fork";
 import Shades from "./components/shades";
-import Setting from "./components/setting-bottom-sheet";
 import { TOOLSTACK } from "@ui/shared/constants/constants";
 import clsx from "clsx";
+import useBottomsheet from "../../../../../../../store/useBottomsheet";
 
 interface Toggle {
   isOpen: boolean;
   showModal: (isOpen: boolean) => void;
   paletteId: string | null;
+  colorPaletteState?: boolean;
+  setColorPaletteState?: (colorPaletteState: boolean) => void;
 }
 
-const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
+const ColorPalette: FC<Toggle> = ({
+  paletteId,
+  isOpen,
+  showModal,
+  colorPaletteState,
+  setColorPaletteState,
+}) => {
   const forker = useFork();
   const { data, isLoading, refetch } = useQuery({
     queryFn: async () => {
@@ -30,7 +38,8 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
     queryKey: ["palette", paletteId],
     enabled: !!paletteId,
   });
-  const [toggleBottomSheet, setToggleBottomSheet] = useState(false);
+
+  const { setToggleBottomSheet } = useBottomsheet();
 
   useEffect(() => {
     if (paletteId) {
@@ -71,31 +80,40 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
           <div>
             <div
               className={clsx(
-                "h-20 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-gray-100 flex items-center justify-between fixed -top-96 right-0 left-0",
-                isOpen ? "top-0" : "-top-96"
+                "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-gray-100 flex items-center justify-between fixed -top-96 right-0 left-0",
+                isOpen ? "top-[3.13rem] z-50" : "-top-96",
+                colorPaletteState && "!top-0 z-30"
               )}
             >
               <div className="flex items-center space-x-4 ml-6">
                 <div
                   className="cursor-pointer"
-                  onClick={() => showModal(false)}
+                  onClick={() => {
+                    showModal(false);
+                    setColorPaletteState && setColorPaletteState(false);
+                  }}
                 >
                   <img width={24} src={angleLeft} alt="" />
                 </div>
-                <p className="max-w-56 text-xl truncate">{data?.prompt}</p>
+                <p className="max-w-56 text-lg truncate">{data?.prompt}</p>
               </div>
               <a
                 href={`${TOOLSTACK}/p/${paletteId}`}
                 target="_blank"
                 className="mr-6"
               >
-                <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-14 h-14 cursor-pointer">
-                  <img width={22} src={info} alt="" />
+                <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-10 h-10 cursor-pointer">
+                  <img width={20} src={info} alt="" />
                 </div>
               </a>
             </div>
 
-            <div className="mt-20 pt-4 h-full overflow-y-auto scrollbar-custom">
+            <div
+              className={clsx(
+                "mt-28 pt-4 h-full overflow-y-auto scrollbar-custom",
+                isOpen && colorPaletteState && "!mt-16"
+              )}
+            >
               <Shades data={data} />
             </div>
 
@@ -119,10 +137,6 @@ const ColorPalette: FC<Toggle> = ({ paletteId, isOpen, showModal }) => {
                 <img width={24} src={settings} alt="" />
               </div>
             </div>
-            <Setting
-              isOpen={toggleBottomSheet}
-              showBottomSheet={setToggleBottomSheet}
-            />
           </div>
         )}
       </div>
