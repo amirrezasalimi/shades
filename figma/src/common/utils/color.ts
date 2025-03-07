@@ -213,4 +213,26 @@ const generateShades = (
   return shades;
 };
 
-export { generateShades };
+function getNeutralColor(hex: string) {
+  // Remove # if present and ensure valid 6-digit hex
+  hex = hex.replace("#", "");
+  if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+    throw new Error("Invalid hex color. Use format #RRGGBB");
+  }
+
+  // Convert hex to RGB
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+
+  // Calculate luminance for grayscale (perceptual weights)
+  const luminance = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+  // Convert luminance to 2-digit hex
+  const grayHex = luminance.toString(16).padStart(2, "0");
+
+  // Return grayscale hex
+  return `#${grayHex}${grayHex}${grayHex}`;
+}
+
+export { generateShades, getNeutralColor };

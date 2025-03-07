@@ -586,10 +586,20 @@ const createPaletteFrame = async (props: Props) => {
   colorsFrame.fills = [];
   colorsFrame.clipsContent = false;
 
+  console.log("props.palette", props.palette);
+
   // Use keyAsLabel if true, otherwise use predefined order
   const allColorKeys = props.keyAsLabel
     ? Object.keys(props.palette)
-    : ["primary", "secondary", "success", "error", "warning", "info"];
+    : [
+        "primary",
+        "secondary",
+        "neutral",
+        "success",
+        "error",
+        "warning",
+        "info",
+      ];
 
   // Create color lists for all colors that exist in the palette
   for (const key of allColorKeys) {
@@ -627,7 +637,15 @@ const createPaletteFrame = async (props: Props) => {
     ? Object.values(props.palette).map((color) =>
         color.name.toLowerCase().replaceAll(" ", "-")
       )
-    : ["primary", "secondary", "success", "error", "warning", "info"];
+    : [
+        "primary",
+        "secondary",
+        "neutral",
+        "success",
+        "error",
+        "warning",
+        "info",
+      ];
   const findColorRealKeyByName = (_name: string) => {
     return Object.values(props.palette).find(
       (color) => color.name.toLowerCase().replaceAll(" ", "-") === _name

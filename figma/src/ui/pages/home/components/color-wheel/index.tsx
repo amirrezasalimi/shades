@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { Popover } from "react-tiny-popover";
 import settings from "@ui/assets/settings.svg";
@@ -10,7 +10,10 @@ import {
   HarmonyType,
   isValidColor,
 } from "../../../../../common/utils/color-wheel";
-import { generateShades } from "../../../../../common/utils/color";
+import {
+  generateShades,
+  getNeutralColor,
+} from "../../../../../common/utils/color";
 import useBottomsheet from "../../../../../store/useBottomsheet";
 import colorNamer from "color-namer";
 import { copyClipboard } from "@ui/shared/hooks/copy-clipboard";
@@ -36,15 +39,19 @@ const ColorWheel = ({ style }: { style?: string }) => {
     { value: 8, label: "8 Shades" },
     { value: 10, label: "10 Shades" },
   ];
+  const neutralColor = useMemo(() => {
+    const neutral = getNeutralColor(color);
+    return neutral;
+  }, [color]);
 
   useEffect(() => {
     if (isValidColor(color)) {
       const harmonyColors = generateColorHarmony(color, harmonyType);
-
-      setOutputColors(harmonyColors);
+      const colors = [...harmonyColors, neutralColor];
+      setOutputColors(colors);
 
       const newShadesMap: Record<string, Record<number, string>> = {};
-      harmonyColors.forEach((harmonyColor) => {
+      colors.forEach((harmonyColor) => {
         newShadesMap[harmonyColor] = generateShades(harmonyColor, shadeCount);
       });
       setShadesMap(newShadesMap);
@@ -79,29 +86,53 @@ const ColorWheel = ({ style }: { style?: string }) => {
 
   const importToFigma = () => {
     const fullColors: ColorPalette = outputColors.reduce(
-      (acc, color, index) => {
+      (acc, _color, index) => {
         const colorName =
-          colorNamer(color).ntc?.[0]?.name ?? `Color ${index + 1}`;
-        acc[color] = {
+          colorNamer(_color).ntc?.[0]?.name ?? `Color ${index + 1}`;
+        const key =
+          _color == neutralColor
+            ? "neutral"
+            : _color == color
+            ? "primary"
+            : _color;
+        acc[key] = {
           name: colorName,
-          hex: color,
-          shades: shadesMap[color],
+          hex: _color,
+          shades: shadesMap[_color],
         };
         return acc;
       },
       {} as ColorPalette
     );
-    const primaryColor = fullColors[outputColors[0]].name;
+    const sortedFullColorsMap = Object.entries(fullColors)
+      .sort(([a], [b]) => {
+        // primary, neutral, ...
+        if (a === "primary") return -1;
+        if (b === "primary") return 1;
+        if (a === "neutral") return -1;
+        if (b === "neutral") return 1;
+
+        return a.localeCompare(b);
+      })
+      .reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+      }, {} as ColorPalette);
+
+    const primaryColor = fullColors["primary"].name;
     NetworkMessages.CREATE_PALETTE.send({
       palette: {
         colors: Object.fromEntries(
-          Object.entries(fullColors).map(([color, data]) => [color, data.name])
+          Object.entries(sortedFullColorsMap).map(([color, data]) => [
+            color,
+            data?.name,
+          ])
         ),
         description: `This color palette is based on the ${primaryColor} color, providing a vibrant and harmonious set of colors for a modern and sophisticated design. The palette includes a range of ${harmonyType} hues that work well together across various UI elements.`,
         fork_count: 0,
         id: makeId(10),
         prompt: "",
-        fullColors,
+        fullColors: sortedFullColorsMap,
         keyAsLabel: true,
         addToStyles: true,
       },
