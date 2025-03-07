@@ -44,10 +44,33 @@ const ColorWheel = ({ style }: { style?: string }) => {
     return neutral;
   }, [color]);
 
+  const getColorName = (_color: string) => {
+    // primary, neutral or actual name
+    if (_color == neutralColor) {
+      return "neutral";
+    }
+    if (_color == color) {
+      return "primary";
+    }
+    return colorNamer(_color).ntc?.[0]?.name ?? _color;
+  };
+
   useEffect(() => {
     if (isValidColor(color)) {
       const harmonyColors = generateColorHarmony(color, harmonyType);
-      const colors = [...harmonyColors, neutralColor];
+      const colors = [...harmonyColors, neutralColor].sort((a, b) => {
+        const name = getColorName(a);
+        const name2 = getColorName(b);
+        if (name === "primary") return -1;
+        if (name2 === "primary") return 1;
+
+        if (name === "neutral") return -1;
+        if (name2 === "neutral") return 1;
+
+        return a.localeCompare(b);
+      });
+
+      // primary, neutral, ...
       setOutputColors(colors);
 
       const newShadesMap: Record<string, Record<number, string>> = {};
@@ -249,9 +272,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
                   >
                     <span className="font-light text-[#191919]">
                       <span className="font-medium">
-                        {colorIndex === 0
-                          ? "Primary"
-                          : colorNamer(outputColor).ntc?.[0]?.name ?? ""}
+                        {getColorName(outputColor)}
                       </span>{" "}
                       - {outputColor.replace("#", "").toUpperCase()}
                     </span>
