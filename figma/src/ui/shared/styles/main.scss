@@ -47,3 +47,37 @@ body {
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
   background: unset;
 }
+
+@keyframes slide-up {
+  from {
+    bottom: -100px;
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    bottom: 0;
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    bottom: -100px;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.1s ease-out forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.1s ease-in forwards;
+}

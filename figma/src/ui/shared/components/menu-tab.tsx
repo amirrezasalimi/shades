@@ -14,7 +14,7 @@ const MenuTab = ({
   return (
     <div
       className={clsx(
-        "relative z-10 flex items-center mt-5 pb-2 rounded-2xl gap-x-5",
+        "relative z-10 flex items-center mt-5 pb-2 gap-x-5",
         style
       )}
     >
