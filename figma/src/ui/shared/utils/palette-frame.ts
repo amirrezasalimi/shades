@@ -586,8 +586,6 @@ const createPaletteFrame = async (props: Props) => {
   colorsFrame.fills = [];
   colorsFrame.clipsContent = false;
 
-  console.log("props.palette", props.palette);
-
   // Use keyAsLabel if true, otherwise use predefined order
   const allColorKeys = props.keyAsLabel
     ? Object.keys(props.palette)
@@ -716,7 +714,7 @@ const createPaletteFrame = async (props: Props) => {
             b: rgb[2],
           });
         } catch (e) {
-          console.log(e);
+          console.error(e);
         }
       }
     }
