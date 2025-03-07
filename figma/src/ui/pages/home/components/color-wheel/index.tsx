@@ -102,7 +102,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
         prompt: "",
         fullColors,
         keyAsLabel: true,
-        addToStyles: false,
+        addToStyles: true,
       },
     });
   };

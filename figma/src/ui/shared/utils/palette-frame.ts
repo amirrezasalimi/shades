@@ -623,21 +623,29 @@ const createPaletteFrame = async (props: Props) => {
   // focus on frame
   figma.viewport.scrollAndZoomIntoView([frame]);
 
-  const allColorsKeys = [
-    "primary",
-    "secondary",
-    "success",
-    "error",
-    "warning",
-    "info",
-  ];
+  const allColorsKeys = props.keyAsLabel
+    ? Object.values(props.palette).map((color) =>
+        color.name.toLowerCase().replaceAll(" ", "-")
+      )
+    : ["primary", "secondary", "success", "error", "warning", "info"];
+  const findColorRealKeyByName = (_name: string) => {
+    return Object.values(props.palette).find(
+      (color) => color.name.toLowerCase().replaceAll(" ", "-") === _name
+    )?.hex;
+  };
   // generate styles
   const generateStyles = async () => {
     // name format: type/shade_code color
-    for (const key of allColorsKeys) {
+    for (const colorKey of allColorsKeys) {
+      const key = findColorRealKeyByName(colorKey);
+      if (!key) {
+        console.error(`Color key not found for ${colorKey}`);
+        continue;
+      }
+
       const colorObj = props.palette[key];
       for (const [shade_code, color] of Object.entries(colorObj.shades)) {
-        const styleName = `${key}/${shade_code} ${color}`;
+        const styleName = `${colorKey}/${shade_code} ${color}`;
         const style = figma.createPaintStyle();
         style.name = styleName;
         const rgb_color = convertHexToRgbRange(color);
@@ -661,19 +669,25 @@ const createPaletteFrame = async (props: Props) => {
     const collection =
       collections.find((collection) => collection.name === collectionId) ??
       figma.variables.createVariableCollection(collectionId);
-    for (const key of allColorsKeys) {
+    for (const colorKey of allColorsKeys) {
+      const key = findColorRealKeyByName(colorKey);
+      if (!key) {
+        console.error(`Color key not found for ${colorKey}`);
+        continue;
+      }
+
       const colorObj = props.palette[key];
       for (const [shade_code, color] of Object.entries(colorObj.shades)) {
         // check exists
         const exists = await figma.variables.getVariableByIdAsync(
-          `${key}/${shade_code}`
+          `${colorKey}/${shade_code}`
         );
         if (exists) {
           continue;
         }
         try {
           const v = figma.variables.createVariable(
-            `${key}/${shade_code}`,
+            `${colorKey}/${shade_code}`,
             collection,
             "COLOR"
           );
