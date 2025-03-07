@@ -1,4 +1,5 @@
 import PaletteFull from "@common/models/palette-full";
+import { copyClipboard } from "@ui/shared/hooks/copy-clipboard";
 
 const colorsKeys = [
   "primary",
@@ -23,11 +24,15 @@ const Shades = ({ data }: { data: PaletteFull | undefined }) => {
         colorsKeys.map((key: string) => {
           const fullColors = data?.fullColors;
           if (fullColors && fullColors[key]) {
+            const hex = fullColors[key].hex;
             const shadesColor: ColorShades = fullColors[key].shades;
             const lengthShades = Object.keys(shadesColor).length;
             return (
-              <div className="flex flex-col mx-6 border-gray-100 mt-3 first:mt-0 pt-3 first:pt-0 last:pb-24 border-t first:border-t-0">
-                <div className="flex justify-between items-center">
+              <div className="flex flex-col mx-6 mt-3 first:mt-0 pt-3 first:pt-0 last:pb-24 border-gray-100 border-t first:border-t-0">
+                <div
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => copyClipboard(hex)}
+                >
                   <div className="font-semibold text-[#191919] text-lg">
                     {fullColors && fullColors[key].name}
                   </div>
@@ -42,7 +47,10 @@ const Shades = ({ data }: { data: PaletteFull | undefined }) => {
                     .map((keyShade) => {
                       const keyShadeColor = shadesColor[keyShade];
                       return (
-                        <div className="flex flex-col space-y-1">
+                        <div
+                          className="flex flex-col space-y-1 cursor-pointer"
+                          onClick={() => copyClipboard(keyShadeColor)}
+                        >
                           <div
                             style={{
                               background: `${keyShadeColor}`,

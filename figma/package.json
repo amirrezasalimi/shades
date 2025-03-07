@@ -25,9 +25,12 @@
     "@trpc/react-query": "next",
     "@trpc/server": "next",
     "@types/chroma-js": "^3.1.1",
+    "@types/color-namer": "^1.3.3",
     "axios": "^1.7.2",
     "chroma-js": "^3.1.2",
     "clsx": "^2.1.1",
+    "color-namer": "^1.4.0",
+    "figx": "^0.1.3",
     "immer": "^10.1.1",
     "monorepo-networker": "^1.5.2",
     "react": "^18.2.0",
@@ -40,7 +43,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@figma/plugin-typings": "^1.97.0",
+    "@figma/plugin-typings": "^1.108.0",
     "@types/node": "^18.15.11",
     "@types/postcss-url": "^10.0.0",
     "@types/react": "^18.0.28",

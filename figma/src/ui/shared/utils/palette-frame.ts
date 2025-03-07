@@ -2,13 +2,128 @@ import { ColorPalette } from "@common/models/palette";
 import { LOGO_BASE64 } from "../constants/logo-base64";
 import { convertHexToRgbRange } from "@common/utils/color";
 import { PluginSettings } from "@common/models/settings";
+import { FIGMA_PLUGIN_URL } from "../constants/constants";
+
+const getLuminance = (r: number, g: number, b: number) => {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+};
+
+const getContrastRatio = (l1: number, l2: number) => {
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const isBright = (r: number, g: number, b: number) => {
+  return getLuminance(r, g, b) > 0.5;
+};
 
 interface Props {
   id: string;
   title: string;
   description: string;
   palette: ColorPalette;
+  keyAsLabel?: boolean;
+  addToStyles?: boolean;
 }
+const width = 2100;
+const framePadding = 124; // Move this here
+
+const createFooter = async () => {
+  const footer = figma.createFrame();
+  footer.name = "Footer";
+  footer.layoutMode = "HORIZONTAL"; // Changed to HORIZONTAL
+  footer.primaryAxisSizingMode = "FIXED"; // Changed to FIXED
+  footer.counterAxisSizingMode = "AUTO";
+  footer.layoutAlign = "STRETCH";
+  footer.resize(width - framePadding * 2, footer.height); // Set width to match container
+  footer.fills = [];
+  footer.itemSpacing = 16;
+  footer.primaryAxisAlignItems = "SPACE_BETWEEN";
+  footer.counterAxisAlignItems = "CENTER";
+  footer.paddingTop = 0;
+  footer.paddingBottom = 0;
+
+  // Left side with logo and text
+  const leftSection = figma.createFrame();
+  leftSection.name = "Left Section";
+  leftSection.layoutMode = "HORIZONTAL";
+  leftSection.primaryAxisSizingMode = "AUTO";
+  leftSection.counterAxisSizingMode = "AUTO";
+  leftSection.fills = [];
+  leftSection.itemSpacing = 16;
+  leftSection.counterAxisAlignItems = "CENTER";
+
+  // Add logo
+  const logo = await figma.createImageAsync(LOGO_BASE64);
+  const logoSize = await logo.getSizeAsync();
+  const logoParent = figma.createFrame();
+  logoParent.resize(logoSize.width, logoSize.height);
+  logoParent.fills = [
+    { type: "IMAGE", scaleMode: "FILL", imageHash: logo.hash },
+  ];
+  logoParent.name = "Logo";
+
+  const textContainer = figma.createFrame();
+  textContainer.name = "Text Container";
+  textContainer.layoutMode = "VERTICAL";
+  textContainer.primaryAxisSizingMode = "AUTO";
+  textContainer.counterAxisSizingMode = "AUTO";
+  textContainer.fills = [];
+  textContainer.itemSpacing = 4;
+
+  const madeWithText = figma.createText();
+  madeWithText.characters = "Made by Shades Plugin";
+  madeWithText.fontSize = 18;
+  madeWithText.fontName = { family: "Inter", style: "Regular" };
+
+  const websiteText = figma.createText();
+  websiteText.characters = "shades.toolstack.run";
+  websiteText.fontSize = 18;
+  websiteText.fills = [{ type: "SOLID", color: { r: 0.42, g: 0.45, b: 0.49 } }];
+  websiteText.fontName = { family: "Inter", style: "Regular" };
+
+  textContainer.appendChild(madeWithText);
+  textContainer.appendChild(websiteText);
+
+  leftSection.appendChild(logoParent);
+  leftSection.appendChild(textContainer);
+
+  // Right side with plugin link
+  const pluginLink = figma.createFrame();
+  pluginLink.name = "Plugin Link Container";
+  pluginLink.layoutMode = "HORIZONTAL";
+  pluginLink.primaryAxisSizingMode = "AUTO";
+  pluginLink.counterAxisSizingMode = "AUTO";
+  pluginLink.fills = [{ type: "SOLID", color: { r: 0.42, g: 0.45, b: 0.49 } }];
+  pluginLink.cornerRadius = 8;
+  pluginLink.paddingLeft = 24;
+  pluginLink.paddingRight = 24;
+  pluginLink.paddingTop = 12;
+  pluginLink.paddingBottom = 12;
+
+  const linkText = figma.createText();
+  linkText.characters = "See Shades Plugin";
+  linkText.fontSize = 18;
+  linkText.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
+  linkText.fontName = { family: "Inter", style: "Medium" };
+  linkText.textDecoration = "NONE";
+  linkText.hyperlink = {
+    type: "URL",
+    value: FIGMA_PLUGIN_URL,
+  };
+
+  pluginLink.appendChild(linkText);
+
+  footer.appendChild(leftSection);
+  footer.appendChild(pluginLink);
+
+  return footer;
+};
 
 const createPaletteFrame = async (props: Props) => {
   // Load FONTS
@@ -32,16 +147,12 @@ const createPaletteFrame = async (props: Props) => {
   // load fonts
   await loadFonts();
 
-  const framePadding = 124;
-  const width = 2800;
-  const height = 2800;
-
   const title = props.title;
   const name = `palette-${props.id}`;
   const description = props.description;
   // remove if already exists
   const existingFrame = figma.currentPage.findChild(
-    (child) => child.name === name
+    (child) => child?.name === name
   );
   if (existingFrame) {
     existingFrame.remove();
@@ -65,9 +176,9 @@ const createPaletteFrame = async (props: Props) => {
     {
       type: "SOLID",
       color: {
-        r: 0.95,
-        g: 0.95,
-        b: 0.95,
+        r: 1,
+        g: 1,
+        b: 1,
       },
     },
   ];
@@ -76,12 +187,13 @@ const createPaletteFrame = async (props: Props) => {
   frame.y = y;
   frame.layoutMode = "VERTICAL";
   frame.primaryAxisSizingMode = "AUTO";
-  frame.resize(width, height);
+  frame.counterAxisSizingMode = "FIXED";
+  frame.resize(width, frame.height);
   frame.paddingLeft = framePadding;
   frame.paddingRight = framePadding;
   frame.paddingTop = framePadding;
   frame.paddingBottom = framePadding;
-  frame.itemSpacing = 78;
+  frame.itemSpacing = 80; // Changed from 78 to 80
   // center items
   frame.primaryAxisAlignItems = "MIN";
   // center content
@@ -91,41 +203,29 @@ const createPaletteFrame = async (props: Props) => {
   const head = figma.createFrame();
   head.fills = [];
   head.name = "Head";
-  head.layoutMode = "HORIZONTAL";
-  // jsutify  between
-  head.primaryAxisAlignItems = "SPACE_BETWEEN";
+  head.layoutMode = "VERTICAL";
   head.primaryAxisSizingMode = "AUTO";
-  head.counterAxisSizingMode = "AUTO";
-  // auto constrain
+  head.counterAxisSizingMode = "FIXED";
   head.layoutAlign = "STRETCH";
-  head.resize(width - framePadding * 2, 200);
+  head.itemSpacing = 24;
+  head.fills = [];
+  head.clipsContent = false;
 
-  // left
-  const headLeft = figma.createFrame();
-  headLeft.name = "Head Left";
-  headLeft.layoutMode = "VERTICAL";
-  headLeft.primaryAxisSizingMode = "AUTO";
-  headLeft.counterAxisSizingMode = "AUTO";
-  headLeft.itemSpacing = 24;
-  headLeft.fills = [];
-
-  // create title
+  // create title directly in head
   const titleText = figma.createText();
   titleText.name = "Title";
-  titleText.characters = title;
+  titleText.characters = "Color Styles";
   titleText.fontSize = 48;
   titleText.fontName = { family: "Inter", style: "Semi Bold" };
-  // set parent
-  headLeft.appendChild(titleText);
+  titleText.layoutAlign = "STRETCH"; // Make text fill container
+  head.appendChild(titleText);
 
-  // sub title
+  // sub title directly in head
   const subTitleText = figma.createText();
   subTitleText.name = "Sub Title";
-  subTitleText.characters = description;
+  subTitleText.characters = props.description || "Made With Shades Plugin.";
   subTitleText.fontSize = 20;
-  // resize
-  subTitleText.resize(width - framePadding * 2 - 250, 190);
-  // gray
+  subTitleText.layoutAlign = "STRETCH"; // Make text fill container
   subTitleText.fills = [
     {
       type: "SOLID",
@@ -136,82 +236,54 @@ const createPaletteFrame = async (props: Props) => {
       },
     },
   ];
-
   subTitleText.fontName = { family: "Inter", style: "Regular" };
-  // set parent
-  headLeft.appendChild(subTitleText);
+  head.appendChild(subTitleText);
 
-  head.appendChild(headLeft);
+  // status section directly in head
+  const statusFrame = figma.createFrame();
+  statusFrame.name = "Status";
+  statusFrame.layoutMode = "VERTICAL";
+  statusFrame.primaryAxisSizingMode = "AUTO";
+  statusFrame.counterAxisSizingMode = "FIXED";
+  statusFrame.layoutAlign = "STRETCH"; // Make status frame fill container
+  statusFrame.itemSpacing = 8;
+  statusFrame.fills = [];
+  statusFrame.visible = false;
 
-  // right
-  const headRight = figma.createFrame();
-  headRight.fills = [];
-  headRight.name = "Head Right";
-  headRight.layoutMode = "VERTICAL";
-  headRight.primaryAxisSizingMode = "AUTO";
-  headRight.counterAxisSizingMode = "AUTO";
-  headRight.resize(250, 128);
-  // items center
-  headRight.primaryAxisAlignItems = "CENTER";
+  const createStatus = (text: string) => {
+    const frame = figma.createFrame();
+    statusFrame.visible = true;
+    frame.layoutMode = "HORIZONTAL";
+    frame.primaryAxisSizingMode = "AUTO";
+    frame.counterAxisSizingMode = "AUTO";
+    frame.itemSpacing = 8;
+    frame.fills = [];
+    frame.counterAxisAlignItems = "CENTER";
+    frame.layoutAlign = "STRETCH"; // Make status items fill container
 
-  // copyright
-  const copyrightFrame = figma.createFrame();
-  copyrightFrame.fills = [];
-  copyrightFrame.name = "Copyright";
-  copyrightFrame.layoutMode = "HORIZONTAL";
-  copyrightFrame.itemSpacing = 8;
-  // min height
-  copyrightFrame.resize(250, 32);
-  // items end
+    const check = figma.createText();
+    check.characters = "✅";
+    check.fontSize = 20;
 
-  // text
-  const copyRightText = figma.createText();
-  copyRightText.name = "Copy Right";
-  copyRightText.characters = "Made With";
-  copyRightText.fontSize = 24;
+    const label = figma.createText();
+    label.characters = text;
+    label.fontSize = 20;
+    label.fills = [{ type: "SOLID", color: { r: 0.42, g: 0.45, b: 0.49 } }];
+    label.fontName = { family: "Inter", style: "Regular" };
 
-  // image
-  const logo = await figma.createImageAsync(LOGO_BASE64);
-  const logoSize = await logo.getSizeAsync();
-  const logoParent = figma.createFrame();
-  logoParent.resize(logoSize.width, logoSize.height);
-  logoParent.fills = [
-    { type: "IMAGE", scaleMode: "FILL", imageHash: logo.hash },
-  ];
-  logoParent.name = "Logo";
-
-  // add link text
-  const linkText = figma.createText();
-  linkText.name = "Link";
-  linkText.characters = "Toolstack.run";
-  linkText.fontSize = 24;
-  linkText.fills = [
-    {
-      type: "SOLID",
-      color: {
-        r: 0.13,
-        g: 0.4,
-        b: 0.92,
-      },
-    },
-  ];
-  linkText.fontName = { family: "Inter", style: "Semi Bold" };
-  // hyperlink
-  const hyperlink: HyperlinkTarget = {
-    type: "URL",
-    value: "https://toolstack.run",
+    frame.appendChild(check);
+    frame.appendChild(label);
+    return frame;
   };
-  // underline
-  linkText.textDecoration = "UNDERLINE";
-  linkText.hyperlink = hyperlink;
 
-  copyrightFrame.appendChild(copyRightText);
-  copyrightFrame.appendChild(logoParent);
+  if (props.addToStyles) {
+    statusFrame.appendChild(createStatus("Added colors To styles"));
+    statusFrame.appendChild(createStatus("Added color To Variable"));
+  }
 
-  headRight.appendChild(copyrightFrame);
-  headRight.appendChild(linkText);
+  head.appendChild(statusFrame);
+  frame.appendChild(head);
 
-  head.appendChild(headRight);
   frame.appendChild(head);
 
   // dash line
@@ -230,34 +302,34 @@ const createPaletteFrame = async (props: Props) => {
       },
     },
   ];
-
-  dashLine.resize(width - framePadding * 2, 0);
+  dashLine.layoutAlign = "STRETCH";
 
   // focus on frame
   figma.viewport.scrollAndZoomIntoView([frame]);
 
   const createColorBox = (type: string, color: string, shade_code: string) => {
     const rgb_color = convertHexToRgbRange(color);
+    const rgb_text = `${Math.round(rgb_color[0] * 255)}, ${Math.round(
+      rgb_color[1] * 255
+    )}, ${Math.round(rgb_color[2] * 255)}`;
 
     const box = figma.createFrame();
     box.name = `${type}/${shade_code} ${color}`;
-    box.resize(200, 190);
+    box.resize(280, 190);
     box.layoutMode = "VERTICAL";
     box.primaryAxisSizingMode = "AUTO";
     box.counterAxisSizingMode = "AUTO";
     box.fills = [];
-    // rounded
     box.cornerRadius = 12;
-    /*         // shadow
-                box.effects = [{
-                    type: "DROP_SHADOW",
-                    color: { r: 0.06, g: 0.09, b: 0.15, a: 0.08 },
-                    offset: { x: 0, y: 12 },
-                    radius: 16,
-                    spread: -4,
-                    blendMode: "NORMAL",
-                    visible: true,
-                }]; */
+    // Add border
+    box.strokes = [
+      {
+        type: "SOLID",
+        color: { r: 0.89, g: 0.89, b: 0.89 }, // #E3E3E3
+      },
+    ];
+    box.strokeWeight = 1;
+
     box.fills = [
       {
         type: "SOLID",
@@ -268,18 +340,18 @@ const createPaletteFrame = async (props: Props) => {
         },
       },
     ];
-    /*      // border
-                box.strokes = [{
-                    type: "SOLID", color: {
-                        r: 0.83, g: 0.88, b: 0.94
-                    },
-                }]; */
 
     // rect
-    const rect = figma.createRectangle();
+    const rect = figma.createFrame();
     box.appendChild(rect);
     rect.resize(200, 110);
     rect.name = "Color";
+    rect.layoutMode = "VERTICAL";
+    rect.primaryAxisSizingMode = "FIXED";
+    rect.counterAxisSizingMode = "FIXED";
+    rect.primaryAxisAlignItems = "CENTER";
+    rect.counterAxisAlignItems = "CENTER";
+    rect.itemSpacing = 4;
 
     rect.fills = [
       {
@@ -291,13 +363,47 @@ const createPaletteFrame = async (props: Props) => {
         },
       },
     ];
+
+    const colorLuminance = getLuminance(
+      Math.round(rgb_color[0] * 255),
+      Math.round(rgb_color[1] * 255),
+      Math.round(rgb_color[2] * 255)
+    );
+    const whiteLuminance = getLuminance(255, 255, 255);
+    const contrastRatio = getContrastRatio(colorLuminance, whiteLuminance);
+
+    const isBrightColor = isBright(
+      Math.round(rgb_color[0] * 255),
+      Math.round(rgb_color[1] * 255),
+      Math.round(rgb_color[2] * 255)
+    );
+
+    const textColor = isBrightColor
+      ? { r: 0, g: 0, b: 0 }
+      : { r: 1, g: 1, b: 1 };
+
+    const contrastNumber = figma.createText();
+    contrastNumber.characters = contrastRatio.toFixed(2);
+    contrastNumber.fontSize = 24;
+    contrastNumber.fontName = { family: "Inter", style: "Semi Bold" };
+    contrastNumber.fills = [{ type: "SOLID", color: textColor }];
+
+    const contrastLabel = figma.createText();
+    contrastLabel.characters = "Contrast ratio";
+    contrastLabel.fontSize = 14;
+    contrastLabel.fontName = { family: "Inter", style: "Regular" };
+    contrastLabel.fills = [{ type: "SOLID", color: textColor, opacity: 0.5 }];
+
+    rect.appendChild(contrastNumber);
+    rect.appendChild(contrastLabel);
+
     // bottom frame
     const bottomFrame = figma.createFrame();
     box.appendChild(bottomFrame);
     // stretch
-    bottomFrame.resize(200, 80);
+    bottomFrame.resize(200, 100); // Increased height to accommodate RGB value
     bottomFrame.layoutMode = "VERTICAL";
-    bottomFrame.itemSpacing = 6;
+    bottomFrame.itemSpacing = 4; // Reduced spacing
     bottomFrame.paddingLeft = 16;
     bottomFrame.paddingRight = 16;
     bottomFrame.paddingTop = 16;
@@ -327,6 +433,25 @@ const createPaletteFrame = async (props: Props) => {
         },
       },
     ];
+
+    // Add RGB value
+    const rgbText = figma.createText();
+    bottomFrame.appendChild(rgbText);
+    rgbText.name = "RGB Value";
+    rgbText.characters = `rgb(${rgb_text})`;
+    rgbText.fontSize = 14;
+    rgbText.fontName = { family: "Inter", style: "Regular" };
+    rgbText.fills = [
+      {
+        type: "SOLID",
+        color: {
+          r: 0.42,
+          g: 0.45,
+          b: 0.49,
+        },
+      },
+    ];
+
     return box;
   };
 
@@ -335,22 +460,12 @@ const createPaletteFrame = async (props: Props) => {
     type: string,
     colors: Record<string, string>
   ) => {
-    /* 
-            frame - vertical(
-                frame - head - horizontal (
-                    text - name
-                    text - type
-                ),
-                frame - colors - horizontal(
-                  createColorBox(color, shade_code)
-                )
-            )
-        */
     const colorList = figma.createFrame();
     colorList.name = name;
     colorList.layoutMode = "VERTICAL";
     colorList.primaryAxisSizingMode = "AUTO";
-    colorList.counterAxisSizingMode = "AUTO";
+    colorList.counterAxisSizingMode = "FIXED";
+    colorList.layoutAlign = "STRETCH"; // Make it fill container width
     colorList.itemSpacing = 24;
     colorList.fills = [];
     colorList.clipsContent = false;
@@ -438,12 +553,15 @@ const createPaletteFrame = async (props: Props) => {
     const colorFrame = figma.createFrame();
     colorFrame.name = "Colors";
     colorFrame.layoutMode = "HORIZONTAL";
-    colorFrame.primaryAxisSizingMode = "AUTO";
+    colorFrame.primaryAxisSizingMode = "FIXED";
     colorFrame.counterAxisSizingMode = "AUTO";
+    colorFrame.layoutAlign = "STRETCH"; // Make it fill container width
     colorFrame.itemSpacing = 32;
     colorFrame.fills = [];
-    // clip content
     colorFrame.clipsContent = false;
+    colorFrame.layoutWrap = "WRAP";
+    colorFrame.counterAxisSpacing = 32;
+
     // create color boxes
     // sort from 950 to 50
     const colorsEntries = Object.entries(colors).sort(
@@ -457,53 +575,50 @@ const createPaletteFrame = async (props: Props) => {
     return colorList;
   };
 
-  // primary,sencondary,neutral,text,background : vertical
-  // success,error,warning,info : horizontal (another frame)
-
   const colorsFrame = figma.createFrame();
   frame.appendChild(colorsFrame);
   colorsFrame.name = "Base Colors";
   colorsFrame.layoutMode = "VERTICAL";
   colorsFrame.primaryAxisSizingMode = "AUTO";
-  colorsFrame.counterAxisSizingMode = "FIXED";
-  // fill height
+  colorsFrame.counterAxisSizingMode = "AUTO";
   colorsFrame.layoutAlign = "STRETCH";
-  colorsFrame.itemSpacing = 48;
+  colorsFrame.itemSpacing = 80; // Changed from 48 to 80
   colorsFrame.fills = [];
   colorsFrame.clipsContent = false;
-  const baseColorsKeys = [
-    "primary",
-    "secondary",
-    "neutral",
-    "text",
-    "background",
-  ];
-  for (const key of baseColorsKeys) {
-    const colorObj = props.palette[key];
-    const colorList = createColorList(colorObj.name, key, colorObj.shades);
-    colorsFrame.appendChild(colorList);
-  }
-  const alertColorsKeys = ["success", "error", "warning", "info"];
-  const alertColorFrame = figma.createFrame();
-  colorsFrame.appendChild(alertColorFrame);
-  alertColorFrame.name = "Alert Colors";
-  alertColorFrame.layoutMode = "HORIZONTAL";
-  // space between
-  alertColorFrame.counterAxisSizingMode = "FIXED";
-  alertColorFrame.layoutAlign = "STRETCH";
-  alertColorFrame.primaryAxisSizingMode = "FIXED";
-  alertColorFrame.fills = [];
-  alertColorFrame.clipsContent = false;
-  alertColorFrame.itemSpacing = 32;
-  alertColorFrame.counterAxisSpacing = 48;
-  alertColorFrame.layoutWrap = "WRAP";
-  // fill container
 
-  for (const key of alertColorsKeys) {
-    const colorObj = props.palette[key];
-    const colorList = createColorList(colorObj.name, key, colorObj.shades);
-    alertColorFrame.appendChild(colorList);
+  // Use keyAsLabel if true, otherwise use predefined order
+  const allColorKeys = props.keyAsLabel
+    ? Object.keys(props.palette)
+    : ["primary", "secondary", "success", "error", "warning", "info"];
+
+  // Create color lists for all colors that exist in the palette
+  for (const key of allColorKeys) {
+    const colorObj = props.palette?.[key];
+    if (colorObj) {
+      const colorList = createColorList(colorObj.name, key, colorObj.shades);
+      colorsFrame.appendChild(colorList);
+    }
   }
+
+  const separator = figma.createLine();
+  separator.name = "Separator";
+  separator.strokeWeight = 1;
+  separator.dashPattern = [10, 10];
+  separator.strokes = [
+    {
+      type: "SOLID",
+      color: {
+        r: 0.72,
+        g: 0.77,
+        b: 0.85,
+      },
+    },
+  ];
+  separator.layoutAlign = "STRETCH";
+  frame.appendChild(separator);
+
+  const footer = await createFooter();
+  frame.appendChild(footer);
 
   // focus on frame
   figma.viewport.scrollAndZoomIntoView([frame]);
@@ -511,9 +626,6 @@ const createPaletteFrame = async (props: Props) => {
   const allColorsKeys = [
     "primary",
     "secondary",
-    "neutral",
-    "text",
-    "background",
     "success",
     "error",
     "warning",
@@ -582,14 +694,14 @@ const createPaletteFrame = async (props: Props) => {
   )) as PluginSettings | null;
   const addToStyle = settings?.addToStyle ?? true;
   const addToVariables = !!settings?.addToVariables;
-  if (addToStyle) {
+  if (addToStyle && props.addToStyles) {
     await generateStyles();
     figma.notify("Palette Styles Created 🎉");
     if (addToVariables) {
       await new Promise((resolve) => setTimeout(resolve, 300));
     }
   }
-  if (addToVariables) {
+  if (addToVariables && props.addToStyles) {
     await generateVariables();
     figma.notify("Palette Variables Created 🎉");
   }

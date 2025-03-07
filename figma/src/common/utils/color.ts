@@ -7,7 +7,10 @@ export function convertHexToRgbRange(hex: string): [number, number, number] {
   return [r, g, b];
 }
 
-const generateShades = (hex: string): Record<number, string> => {
+const generateShades = (
+  hex: string,
+  count: number = 10
+): Record<number, string> => {
   // Validate hex input
   if (!hex) {
     console.error("Invalid hex color provided");
@@ -116,8 +119,23 @@ const generateShades = (hex: string): Record<number, string> => {
   // Generate shades by adjusting lightness
   const shades: Record<number, string> = {};
 
-  // Define the shade levels from 950 (darkest) to 50 (lightest)
-  const shadeLevels = [950, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50];
+  // Define the shade levels based on count
+  let shadeLevels: number[];
+  switch (count) {
+    case 3:
+      shadeLevels = [800, 500, 200];
+      break;
+    case 6:
+      shadeLevels = [900, 700, 500, 400, 300, 100];
+      break;
+    case 8:
+      shadeLevels = [900, 800, 600, 500, 400, 300, 200, 100];
+      break;
+    case 10:
+    default:
+      shadeLevels = [900, 800, 700, 600, 500, 400, 300, 200, 100, 50];
+      break;
+  }
 
   // Create a mapping from shade level to lightness value
   // With special handling for very light or very dark colors

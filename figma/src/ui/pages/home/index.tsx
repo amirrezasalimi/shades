@@ -12,7 +12,7 @@ const Home = () => {
   useView();
   const { toggleBottomSheet, setToggleBottomSheet } = useBottomsheet();
   return (
-    <div className="pt-[9.5rem] w-full h-full relative">
+    <div className="relative pt-[9.5rem] w-full h-full">
       <div className="top-0 z-20 fixed inset-x-0 bg-white bg-opacity-80 backdrop-blur-xl px-6 pt-6 border-[#E9E9E9] border-b-2 w-full">
         <Header />
         <MenuTab tab={activeTab} setTab={setActiveTab} />

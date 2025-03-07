@@ -15,12 +15,15 @@ const useFork = () => {
       palette_id: paletteId,
     });
   };
-  const forkToFigma = async (id: string,fullPalette:PaletteFull) => {
+  const forkToFigma = async (id: string, fullPalette: PaletteFull) => {
     if (forkingId) return;
     try {
       setForkingId(id);
       NetworkMessages.CREATE_PALETTE.send({
-        palette: fullPalette,
+        palette: {
+          ...fullPalette,
+          addToStyles: true,
+        },
       });
       await addLog(fullPalette.id);
       toast.custom(() => (

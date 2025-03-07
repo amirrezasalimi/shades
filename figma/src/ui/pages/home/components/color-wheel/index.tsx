@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { Popover } from "react-tiny-popover";
 import settings from "@ui/assets/settings.svg";
@@ -11,9 +11,12 @@ import {
   isValidColor,
 } from "../../../../../common/utils/color-wheel";
 import { generateShades } from "../../../../../common/utils/color";
-import toast from "react-hot-toast";
-import Setting from "./components/setting-bottom-sheet";
 import useBottomsheet from "../../../../../store/useBottomsheet";
+import colorNamer from "color-namer";
+import { copyClipboard } from "@ui/shared/hooks/copy-clipboard";
+import { NetworkMessages } from "@common/network/messages";
+import { ColorPalette } from "@common/models/palette";
+import Dropdown from "@ui/shared/components/dropdown";
 
 const ColorWheel = ({ style }: { style?: string }) => {
   const [color, setColor] = useState("#6366f1");
@@ -23,8 +26,15 @@ const ColorWheel = ({ style }: { style?: string }) => {
   const [shadesMap, setShadesMap] = useState<
     Record<string, Record<number, string>>
   >({});
-
+  const [shadeCount, setShadeCount] = useState<number>(10);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+
+  const shadeOptions = [
+    { value: 3, label: "3 Shades" },
+    { value: 6, label: "6 Shades" },
+    { value: 8, label: "8 Shades" },
+    { value: 10, label: "10 Shades" },
+  ];
 
   useEffect(() => {
     if (isValidColor(color)) {
@@ -34,25 +44,18 @@ const ColorWheel = ({ style }: { style?: string }) => {
 
       const newShadesMap: Record<string, Record<number, string>> = {};
       harmonyColors.forEach((harmonyColor) => {
-        newShadesMap[harmonyColor] = generateShades(harmonyColor);
+        newShadesMap[harmonyColor] = generateShades(harmonyColor, shadeCount);
       });
       setShadesMap(newShadesMap);
     }
-  }, [color, harmonyType]);
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => toast.success("Copied to clipboard!"))
-      .catch(() => toast.error("Failed to copy"));
-  };
+  }, [color, harmonyType, shadeCount]);
 
   const harmonyOptions: { value: HarmonyType; label: string }[] = [
     { value: "complementary", label: "Complementary" },
     { value: "monochromatic", label: "Monochromatic" },
     { value: "analogous", label: "Analogous" },
     { value: "triadic", label: "Triadic" },
-    { value: "split-complementary", label: "Split Complementary" },
+    { value: "split-complementary", label: "Split" },
     { value: "square", label: "Square" },
   ];
 
@@ -61,23 +64,6 @@ const ColorWheel = ({ style }: { style?: string }) => {
     setValue(sanitizedColor);
     isValidColor(sanitizedColor) && setColor(sanitizedColor);
   };
-
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const getTextColor = (bgColor: string) => {
     const hex = bgColor.replace("#", "");
@@ -88,45 +74,73 @@ const ColorWheel = ({ style }: { style?: string }) => {
     return brightness > 128 ? "black" : "white";
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add("overflow-hidden");
-    }
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
-  }, [isOpen]);
-
   const { setToggleBottomSheet } = useBottomsheet();
 
+  const importToFigma = () => {
+    const fullColors: ColorPalette = outputColors.reduce(
+      (acc, color, index) => {
+        const colorName =
+          colorNamer(color).ntc?.[0]?.name ?? `Color ${index + 1}`;
+        acc[color] = {
+          name: colorName,
+          hex: color,
+          shades: shadesMap[color],
+        };
+        return acc;
+      },
+      {} as ColorPalette
+    );
+    const primaryColor = fullColors[outputColors[0]].name;
+    NetworkMessages.CREATE_PALETTE.send({
+      palette: {
+        colors: Object.fromEntries(
+          Object.entries(fullColors).map(([color, data]) => [color, data.name])
+        ),
+        description: `This color palette is based on the ${primaryColor} color, providing a vibrant and harmonious set of colors for a modern and sophisticated design. The palette includes a range of ${harmonyType} hues that work well together across various UI elements.`,
+        fork_count: 0,
+        id: "",
+        prompt: "",
+        fullColors,
+        keyAsLabel: true,
+        addToStyles: false,
+      },
+    });
+  };
   return (
     <div className={clsx(style)}>
-      <div className="flex lg:flex-row flex-col relative pb-10">
+      <div className="relative flex lg:flex-row flex-col pb-10">
         <div className="flex flex-col gap-4 mx-6">
-          <div className="">
-            <div className="flex items-center h-12 relative">
+          <div>
+            <div className="relative flex items-center h-12">
               <input
                 type="text"
                 maxLength={7}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsPickerOpen(true);
+                }}
                 value={value.replace("#", "")}
                 onChange={(e) => colorValue(e.target.value)}
-                className="p-2 border-[0.5px] border-[#b0b0b0] rounded-2xl w-full h-full pl-[3.7rem] focus:outline-none"
+                className="p-2 pl-[3.7rem] border-[#b0b0b0] border-[0.5px] rounded-2xl focus:outline-none w-full h-full"
               />
-              <span className="text-[#808080] absolute top-1/2 -translate-y-1/2 left-12">
+              <span className="top-1/2 left-12 absolute text-[#808080] -translate-y-1/2">
                 #
               </span>
-              <span className="text-[#b0b0b0] font-light text-sm absolute -bottom-[1.9rem] left-0">
+              <span className="-bottom-[1.9rem] left-0 absolute font-light text-[#b0b0b0] text-sm">
                 Select layer or paste Hex code
               </span>
 
               <Popover
                 isOpen={isPickerOpen}
-                positions={["right", "bottom"]}
+                positions={["bottom"]}
                 padding={10}
                 onClickOutside={() => setIsPickerOpen(false)}
+                containerClassName="z-[200] !left-48 !-top-16"
                 content={
-                  <div className="bg-white shadow-lg p-1 border-[0.5px] border-[#b0b0b0] rounded-lg absolute -bottom-60">
+                  <div className="bg-white shadow-lg p-1 border-[#b0b0b0] border-[0.5px] rounded-lg">
                     <HexColorPicker
+                      className="!size-[150px]"
                       color={color}
                       onChange={(newColor) => {
                         const sanitizedColor = newColor.replace("#", "");
@@ -138,7 +152,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
                 }
               >
                 <div
-                  className="flex-shrink-0 hover:shadow-md rounded-lg transition-shadow cursor-pointer absolute top-1/2 -translate-y-1/2 left-3 h-6 w-6"
+                  className="top-1/2 left-3 absolute flex-shrink-0 hover:shadow-md rounded-lg w-6 h-6 transition-shadow -translate-y-1/2 cursor-pointer"
                   style={{ backgroundColor: color }}
                   onClick={() => setIsPickerOpen(!isPickerOpen)}
                 />
@@ -146,72 +160,40 @@ const ColorWheel = ({ style }: { style?: string }) => {
             </div>
           </div>
 
-          <div className="mt-7 z-10">
-            <label className="block mb-2 font-light text-sm">
-              Color Combination
-            </label>
-            <div className="relative w-full" ref={dropdownRef}>
-              <button
-                onClick={() => setIsOpen((prev) => !prev)}
-                className="bg-white p-3 border-[0.5px] border-[#b0b0b0] h-12 rounded-2xl w-full flex items-center justify-between transition font-light text-sm"
-              >
-                {
-                  harmonyOptions.find((option) => option.value === harmonyType)
-                    ?.label
-                }
-                <span className="text-gray-500">
-                  <img
-                    width={16}
-                    className={clsx(
-                      "transition-transform",
-                      isOpen ? "rotate-90" : "-rotate-90"
-                    )}
-                    src={angleLeft}
-                    alt=""
-                  />
-                </span>
-              </button>
+          <div className="flex gap-4 mt-8">
+            <Dropdown
+              label="Shade Count"
+              value={shadeCount}
+              options={shadeOptions}
+              onChange={setShadeCount}
+            />
 
-              <div
-                className={`absolute left-0 top-full my-2 w-full py-2 bg-white border-[0.5px] border-[#b0b0b0] shadow-lg rounded-xl overflow-hidden transition-all duration-200 ${
-                  isOpen ? "opacity-100 max-h-[15.5rem]" : "opacity-0 max-h-0"
-                }`}
-                style={{ pointerEvents: isOpen ? "auto" : "none" }}
-              >
-                {harmonyOptions.map((option) => (
-                  <div
-                    key={option.value}
-                    onClick={() => {
-                      setHarmonyType(option.value);
-                      setIsOpen(false);
-                    }}
-                    className="px-3 py-2 mx-2.5 mt-0.5 text-gray-700 hover:bg-[#F3F3F3] cursor-pointer transition rounded-xl text-sm"
-                  >
-                    {option.label}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Dropdown
+              label="Color Combination"
+              value={harmonyType}
+              options={harmonyOptions}
+              onChange={setHarmonyType}
+            />
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto mt-3">
-          <div className="flex rounded-t-xl overflow-hidden mx-6">
+        <div className="flex-1 mt-3 overflow-auto">
+          <div className="flex mx-6 rounded-t-xl overflow-hidden">
             {outputColors.map((outputColor, index) => (
               <div
                 key={`${outputColor}-${index}`}
-                className="flex items-center w-full"
-                onClick={() => copyToClipboard(outputColor)}
+                className="flex items-center w-full cursor-pointer"
+                onClick={() => copyClipboard(outputColor)}
               >
                 <div
-                  className="w-full cursor-pointer h-[104px] relative"
+                  className="relative w-full h-[104px] cursor-pointer"
                   style={{
                     backgroundColor: outputColor,
                     color: getTextColor(outputColor),
                   }}
                   title={outputColor}
                 >
-                  <span className="mt-1 text-xs absolute top-7 left-1/2 -translate-x-1/2">
+                  <span className="top-7 left-1/2 absolute mt-1 text-xs -translate-x-1/2">
                     {outputColor.toUpperCase()}
                   </span>
                 </div>
@@ -219,7 +201,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
             ))}
           </div>
 
-          <div className="space-y-8 bg-white bg-opacity-80 relative -translate-y-[2.1rem]">
+          <div className="relative space-y-8 bg-white bg-opacity-80 -translate-y-[2.1rem]">
             {outputColors.map((outputColor, colorIndex) => (
               <div
                 key={`shades-${outputColor}-${colorIndex}`}
@@ -228,34 +210,28 @@ const ColorWheel = ({ style }: { style?: string }) => {
                   colorIndex === 0 && "bg-opacity-80 backdrop-blur-[12px]"
                 )}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="flex items-center gap-2 font-medium">
-                    <span className="text-[#191919] font-light">
-                      <span className="font-medium">Primary</span> -{" "}
-                      {outputColor.replace("#", "").toUpperCase()}
+                <div className="flex justify-between items-center mb-3">
+                  <h3
+                    className="flex items-center gap-2 font-medium cursor-pointer"
+                    onClick={() => copyClipboard(outputColor)}
+                  >
+                    <span className="font-light text-[#191919]">
+                      <span className="font-medium">
+                        {colorIndex === 0
+                          ? "Primary"
+                          : colorNamer(outputColor).ntc?.[0]?.name ?? ""}
+                      </span>{" "}
+                      - {outputColor.replace("#", "").toUpperCase()}
                     </span>
                   </h3>
 
                   <div className="flex items-center gap-4">
-                    <span className="text-[#808080] text-sm font-light">
+                    <span className="font-light text-[#808080] text-sm">
                       {Object.entries(shadesMap[outputColor]).length} Colors
                     </span>
-                    <span className="text-[#46B235] text-sm">Primary</span>
                   </div>
                 </div>
                 <div className="gap-1 grid grid-cols-5">
-                  {/* Shade labels */}
-                  {/* {[950, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50].map(
-                    (shade) => (
-                      <div
-                        key={`label-${shade}`}
-                        className="font-mono text-gray-600 text-xs text-center"
-                      >
-                        {shade}
-                      </div>
-                    )
-                  )} */}
-
                   {/* Shade colors */}
                   {shadesMap[outputColor] &&
                     Object.entries(shadesMap[outputColor])
@@ -263,16 +239,16 @@ const ColorWheel = ({ style }: { style?: string }) => {
                       .map(([shade, shadeColor]) => (
                         <div
                           key={`${outputColor}-${shade}`}
-                          className="rounded-xl h-16 w-16 mb-12"
+                          className="mb-12 rounded-xl size-16 cursor-pointer"
                           style={{ backgroundColor: shadeColor }}
-                          onClick={() => copyToClipboard(shadeColor)}
+                          onClick={() => copyClipboard(shadeColor)}
                           title={`${shadeColor} (${shade})`}
                         >
-                          <div className="pt-[70px] flex flex-col">
-                            <span className="text-xs text-[#191919] font-medium">
+                          <div className="flex flex-col pt-[70px]">
+                            <span className="font-medium text-[#191919] text-xs">
                               {shade}
                             </span>
-                            <span className="text-xs text-[#808080] font-light">
+                            <span className="font-light text-[#808080] text-xs">
                               {shadeColor}
                             </span>
                           </div>
@@ -286,19 +262,19 @@ const ColorWheel = ({ style }: { style?: string }) => {
 
         <div
           className={clsx(
-            "fixed -bottom-96 flex items-center w-[calc(100%_-_48px)] left-1/2 -translate-x-1/2 transition-all duration-300 h-[50px] overflow-hidden rounded-2xl",
-            isOpen ? "bottom-5" : "bottom-4"
+            "-bottom-96 left-1/2 fixed flex items-center rounded-2xl w-[calc(100%_-_48px)] h-[50px] overflow-hidden transition-all -translate-x-1/2 duration-300",
+            "bottom-5"
           )}
         >
           <div
-            // onClick={fork}
+            onClick={importToFigma}
             className="flex justify-center items-center space-x-2 bg-[#232323] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
           >
             <img width={22} src={figma} alt="" />
             <span>Import to figma</span>
           </div>
           <div
-            className="flex justify-center items-center border-gray-100 bg-white border rounded-r-2xl w-[50px] h-full cursor-pointer"
+            className="flex justify-center items-center bg-white border border-gray-100 rounded-r-2xl w-[50px] h-full cursor-pointer"
             onClick={() => setToggleBottomSheet(true)}
           >
             <img width={24} src={settings} alt="" />

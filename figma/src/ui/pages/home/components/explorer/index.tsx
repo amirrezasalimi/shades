@@ -23,7 +23,7 @@ const Item = ({
 }) => {
   return (
     <div
-      className="relative hover:bg-[#F3F3F3] transition-colors group"
+      className="group relative hover:bg-[#F3F3F3] transition-colors"
       onClick={onClick}
     >
       <div
@@ -55,7 +55,7 @@ const Item = ({
   );
 };
 const SkeletonItem = () => (
-  <div className="flex justify-between items-center border-gray-100 mx-6 py-2 border-b animate-pulse">
+  <div className="flex justify-between items-center mx-6 py-2 border-gray-100 border-b animate-pulse">
     <div className="flex flex-col space-y-1">
       <div className="bg-slate-200 rounded w-36 h-5"></div>
       <div className="bg-slate-200 rounded w-10 h-5"></div>
