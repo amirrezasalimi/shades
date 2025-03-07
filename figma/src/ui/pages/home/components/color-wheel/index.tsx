@@ -143,6 +143,9 @@ const ColorWheel = ({ style }: { style?: string }) => {
       }, {} as ColorPalette);
 
     const primaryColor = fullColors["primary"].name;
+    const uniqueId = Object.values(fullColors)
+      .map((color) => color.hex)
+      .join(",");
     NetworkMessages.CREATE_PALETTE.send({
       palette: {
         colors: Object.fromEntries(
@@ -153,7 +156,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
         ),
         description: `This color palette is based on the ${primaryColor} color, providing a vibrant and harmonious set of colors for a modern and sophisticated design. The palette includes a range of ${harmonyType} hues that work well together across various UI elements.`,
         fork_count: 0,
-        id: makeId(10),
+        id: uniqueId,
         prompt: "",
         fullColors: sortedFullColorsMap,
         keyAsLabel: true,
