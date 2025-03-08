@@ -1,16 +1,10 @@
 import ColorWheelIcon from "@ui/assets/color-wheel";
 import MagicoonWhite from "@ui/assets/magicoon-white";
 import clsx from "clsx";
+import useMenu from "../../../store/useMenu";
 
-const MenuTab = ({
-  tab,
-  setTab,
-  style,
-}: {
-  tab: string;
-  setTab: (value: string) => void;
-  style?: string;
-}) => {
+const MenuTab = ({ style }: { style?: string }) => {
+  const { activeTab, setActiveTab } = useMenu();
   return (
     <div
       className={clsx(
@@ -21,7 +15,7 @@ const MenuTab = ({
       <div
         className={clsx(
           "h-0.5 bg-primary absolute top-full transition-transform",
-          tab === "colorWheel"
+          activeTab === "colorWheel"
             ? "translate-x-[103px] w-[105px]"
             : "translate-x-1 w-[80px]"
         )}
@@ -29,12 +23,12 @@ const MenuTab = ({
       <div
         className={clsx(
           "flex items-center justify-center text-sm rounded-2xl h-full transition-colors cursor-pointer gap-1",
-          tab === "aiColors" ? "text-primary" : "text-[#808080]"
+          activeTab === "aiColors" ? "text-primary" : "text-[#808080]"
         )}
-        onClick={() => setTab("aiColors")}
+        onClick={() => setActiveTab("aiColors")}
       >
         <MagicoonWhite
-          color={tab === "aiColors" ? "#ff473b" : "#808080"}
+          color={activeTab === "aiColors" ? "#ff473b" : "#808080"}
           size="20px"
         />
         Ai Colors
@@ -42,13 +36,13 @@ const MenuTab = ({
       <div
         className={clsx(
           "flex items-center justify-center text-sm rounded-2xl h-full transition-colors cursor-pointer gap-1",
-          tab === "colorWheel" ? "text-primary" : "text-[#808080]"
+          activeTab === "colorWheel" ? "text-primary" : "text-[#808080]"
         )}
-        onClick={() => setTab("colorWheel")}
+        onClick={() => setActiveTab("colorWheel")}
       >
         <ColorWheelIcon
           size="18px"
-          color={tab === "colorWheel" ? "#ff473b" : "#808080"}
+          color={activeTab === "colorWheel" ? "#ff473b" : "#808080"}
         />
         Color Wheel
       </div>
