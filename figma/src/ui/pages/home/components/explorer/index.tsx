@@ -115,7 +115,7 @@ const Explorer = ({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-custom">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-custom pt-[7.5rem]">
       <ColorPalette
         showModal={setShowColorModal}
         isOpen={showPaletteModal}

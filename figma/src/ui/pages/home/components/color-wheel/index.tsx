@@ -235,7 +235,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
           </div>
         </div>
 
-        <div className="flex-1 mt-3 overflow-auto">
+        <div className="flex-1 mt-3">
           <div className="flex mx-6 rounded-t-xl overflow-hidden">
             {headColors.map((outputColor, index) => (
               <div
