@@ -41,6 +41,8 @@ const ColorPalette: FC<Toggle> = ({
 
   const { setToggleBottomSheet } = useBottomsheet();
 
+  const [isImporting, setIsImporting] = useState(false);
+
   useEffect(() => {
     if (paletteId) {
       refetch();
@@ -56,10 +58,18 @@ const ColorPalette: FC<Toggle> = ({
     };
   }, [isOpen]);
 
-  const fork = () => {
+  const fork = async () => {
     if (data && paletteId) {
-      forker.forkToFigma(paletteId, data);
+      await forker.forkToFigma(paletteId, data);
     }
+  };
+
+  const handleImportToFigma = async () => {
+    setIsImporting(true);
+    await fork();
+    setTimeout(() => {
+      setIsImporting(false);
+    }, 1500);
   };
 
   return (
@@ -80,7 +90,7 @@ const ColorPalette: FC<Toggle> = ({
           <div>
             <div
               className={clsx(
-                "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-[#e9e9e9] flex items-center justify-between fixed -top-96 right-0 left-0",
+                "-top-96 right-0 left-0 fixed flex justify-between items-center bg-white bg-opacity-80 backdrop-blur-xl border-[#e9e9e9] border-b h-16 transition-all duration-300",
                 isOpen ? "top-[3.13rem] z-50" : "-top-96",
                 colorPaletteState && "!top-0 z-30"
               )}
@@ -102,7 +112,7 @@ const ColorPalette: FC<Toggle> = ({
                 target="_blank"
                 className="mr-6"
               >
-                <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-10 h-10 cursor-pointer">
+                <div className="flex justify-center items-center border border-gray-300 rounded-2xl w-10 h-10 cursor-pointer">
                   <img width={20} src={info} alt="" />
                 </div>
               </a>
@@ -119,19 +129,25 @@ const ColorPalette: FC<Toggle> = ({
 
             <div
               className={clsx(
-                "fixed -bottom-96 flex items-center w-[calc(100%_-_48px)] left-1/2 -translate-x-1/2 transition-all duration-300 h-[50px] overflow-hidden rounded-2xl",
+                "-bottom-96 left-1/2 fixed flex items-center rounded-2xl w-[calc(100%_-_48px)] h-[50px] overflow-hidden transition-all -translate-x-1/2 duration-300",
                 isOpen ? "bottom-5" : "-bottom-96"
               )}
             >
               <div
-                onClick={fork}
+                onClick={handleImportToFigma}
                 className="flex justify-center items-center space-x-2 bg-[#232323] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
               >
-                <img width={22} src={figma} alt="" />
-                <span>Import to figma</span>
+                {isImporting ? (
+                  <div className="border-2 border-white border-t-transparent rounded-full w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <img width={22} src={figma} alt="" />
+                    <span>Import to figma</span>
+                  </>
+                )}
               </div>
               <div
-                className="flex justify-center items-center border-gray-100 bg-white border rounded-r-2xl w-[50px] h-full cursor-pointer"
+                className="flex justify-center items-center bg-white border border-gray-100 rounded-r-2xl w-[50px] h-full cursor-pointer"
                 onClick={() => setToggleBottomSheet(true)}
               >
                 <img width={24} src={settings} alt="" />

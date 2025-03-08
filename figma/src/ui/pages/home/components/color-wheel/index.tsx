@@ -4,7 +4,6 @@ import { Popover } from "react-tiny-popover";
 import settings from "@ui/assets/settings.svg";
 import figma from "@ui/assets/figma.svg";
 import clsx from "clsx";
-import angleLeft from "@ui/assets/angle-left.svg";
 import {
   generateColorHarmony,
   HarmonyType,
@@ -20,7 +19,6 @@ import { copyClipboard } from "@ui/shared/hooks/copy-clipboard";
 import { NetworkMessages } from "@common/network/messages";
 import { ColorPalette } from "@common/models/palette";
 import Dropdown from "@ui/shared/components/dropdown";
-import makeId from "@ui/shared/utils/make-id";
 
 const ColorWheel = ({ style }: { style?: string }) => {
   const [color, setColor] = useState("#6366f1");
@@ -32,6 +30,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
   >({});
   const [shadeCount, setShadeCount] = useState<number>(10);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const shadeOptions = [
     { value: 3, label: "3 Shades" },
@@ -107,7 +106,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
 
   const { setToggleBottomSheet } = useBottomsheet();
 
-  const importToFigma = () => {
+  const importToFigma = async () => {
     const fullColors: ColorPalette = outputColors.reduce(
       (acc, _color, index) => {
         const colorName =
@@ -164,6 +163,15 @@ const ColorWheel = ({ style }: { style?: string }) => {
       },
     });
   };
+
+  const handleImportToFigma = async () => {
+    setIsImporting(true);
+    await importToFigma();
+    setTimeout(() => {
+      setIsImporting(false);
+    }, 1500);
+  };
+
   const headColors = useMemo(() => {
     const colors = outputColors.filter((color) => color !== neutralColor);
     return colors;
@@ -323,11 +331,17 @@ const ColorWheel = ({ style }: { style?: string }) => {
           )}
         >
           <div
-            onClick={importToFigma}
+            onClick={handleImportToFigma}
             className="flex justify-center items-center space-x-2 bg-[#232323] w-[calc(100%_-_50px)] h-full text-white cursor-pointer"
           >
-            <img width={22} src={figma} alt="" />
-            <span>Import to figma</span>
+            {isImporting ? (
+              <div className="border-2 border-white border-t-transparent rounded-full w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <img width={22} src={figma} alt="" />
+                <span>Import to figma</span>
+              </>
+            )}
           </div>
           <div
             className="flex justify-center items-center bg-white border border-gray-100 rounded-r-2xl w-[50px] h-full cursor-pointer"
