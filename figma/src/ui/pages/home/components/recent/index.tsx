@@ -46,7 +46,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
     <>
       <div
         className={clsx(
-          "top-0 right-0 z-20 fixed bg-white h-screen overflow-y-auto transition-all duration-300 pt-[7.5rem]",
+          "top-0 right-0 z-20 fixed bg-white h-screen overflow-y-auto transition-all duration-300",
           isOpen ? "left-0" : "left-full"
         )}
       >
@@ -78,7 +78,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
           {!showPaletteModal ? (
             <div
               className={clsx(
-                "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-gray-100 flex items-center justify-between fixed -top-96 right-0 left-0 z-10",
+                "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-[#e9e9e9] flex items-center justify-between fixed -top-96 right-0 left-0 z-10",
                 isOpen ? "top-[3.13rem] z-30" : "-top-96"
               )}
             >
@@ -105,7 +105,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
               {activeTab === "colorWheel" && (
                 <div
                   className={clsx(
-                    "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-gray-100 flex items-center justify-between fixed -top-96 right-0 left-0 z-10",
+                    "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-[#e9e9e9] flex items-center justify-between fixed -top-96 right-0 left-0 z-10",
                     isOpen ? "top-[3.13rem] z-30" : "-top-96"
                   )}
                 >
@@ -139,7 +139,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
             setShowColorModal={setShowColorModal}
           />
         )}
-        {colorWheelVisible && <ColorWheel style="mt-2" />}
+        {colorWheelVisible && <ColorWheel style="mt-2 pt-[7.5rem]" />}
       </div>
     </>
   );
