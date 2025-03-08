@@ -91,7 +91,7 @@ const ColorPalette: FC<Toggle> = ({
             <div
               className={clsx(
                 "-top-96 right-0 left-0 fixed flex justify-between items-center bg-white bg-opacity-80 backdrop-blur-xl border-[#e9e9e9] border-b h-16 transition-all duration-300",
-                isOpen ? "top-[3.13rem] z-50" : "-top-96",
+                isOpen ? "top-0 z-50" : "-top-96",
                 colorPaletteState && "!top-0 z-30"
               )}
             >
@@ -120,7 +120,7 @@ const ColorPalette: FC<Toggle> = ({
 
             <div
               className={clsx(
-                "mt-28 pt-4 h-full overflow-y-auto scrollbar-custom",
+                "mt-16 pt-4 h-full overflow-y-auto scrollbar-custom",
                 isOpen && colorPaletteState && "!pt-20 !mt-0"
               )}
             >
