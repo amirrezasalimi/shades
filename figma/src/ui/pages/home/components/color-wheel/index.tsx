@@ -164,6 +164,11 @@ const ColorWheel = ({ style }: { style?: string }) => {
       },
     });
   };
+  const headColors = useMemo(() => {
+    const colors = outputColors.filter((color) => color !== neutralColor);
+    return colors;
+  }, [outputColors, neutralColor]);
+
   return (
     <div className={clsx(style)}>
       <div className="relative flex lg:flex-row flex-col pb-10">
@@ -232,7 +237,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
 
         <div className="flex-1 mt-3 overflow-auto">
           <div className="flex mx-6 rounded-t-xl overflow-hidden">
-            {outputColors.map((outputColor, index) => (
+            {headColors.map((outputColor, index) => (
               <div
                 key={`${outputColor}-${index}`}
                 className="flex items-center w-full cursor-pointer"
