@@ -60,7 +60,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
         <div>
           <div
             className={clsx(
-              "border-b z-20 border-[#e9e9e9] h-[50px] bg-opacity-80 backdrop-blur-xl bg-white",
+              "z-20 bg-white bg-opacity-80 backdrop-blur-xl border-[#e9e9e9] border-b h-[50px]",
               isOpen && "fixed top-0 left-0 right-0 z-30"
             )}
           >
@@ -69,7 +69,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
                 tab={activeTab}
                 setTab={handleTabChange}
                 style={clsx(
-                  "!mt-0 transition-all duration-300 h-full !pb-0",
+                  "!mt-0 !pb-0 h-full transition-all duration-300",
                   isOpen && "fixed top-0 left-0 right-0"
                 )}
               />
@@ -78,7 +78,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
           {!showPaletteModal ? (
             <div
               className={clsx(
-                "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-[#e9e9e9] flex items-center justify-between fixed -top-96 right-0 left-0 z-10",
+                "-top-96 right-0 left-0 z-10 fixed flex justify-between items-center bg-white bg-opacity-80 backdrop-blur-xl border-[#e9e9e9] border-b h-16 transition-all duration-300",
                 isOpen ? "top-[3.13rem] z-30" : "-top-96"
               )}
             >
@@ -105,7 +105,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
               {activeTab === "colorWheel" && (
                 <div
                   className={clsx(
-                    "h-16 bg-white bg-opacity-80 backdrop-blur-xl border-b transition-all duration-300 border-[#e9e9e9] flex items-center justify-between fixed -top-96 right-0 left-0 z-10",
+                    "-top-96 right-0 left-0 z-10 fixed flex justify-between items-center bg-white bg-opacity-80 backdrop-blur-xl border-[#e9e9e9] border-b h-16 transition-all duration-300",
                     isOpen ? "top-[3.13rem] z-30" : "-top-96"
                   )}
                 >
@@ -139,7 +139,7 @@ const Recent: FC<Toggle> = ({ isOpen, showModal }) => {
             setShowColorModal={setShowColorModal}
           />
         )}
-        {colorWheelVisible && <ColorWheel style="mt-2 pt-[7.5rem]" />}
+        {colorWheelVisible && <ColorWheel className="mt-2 pt-[7.5rem]" />}
       </div>
     </>
   );

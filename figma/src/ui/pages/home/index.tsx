@@ -19,7 +19,7 @@ const Home = () => {
         <MenuTab tab={activeTab} setTab={setActiveTab} />
       </div>
       {activeTab === "aiColors" && <GeneratePalette />}
-      {activeTab === "colorWheel" && <ColorWheel style="mt-0" />}
+      {activeTab === "colorWheel" && <ColorWheel className="mt-0" />}
       <Setting
         isOpen={toggleBottomSheet}
         showBottomSheet={setToggleBottomSheet}

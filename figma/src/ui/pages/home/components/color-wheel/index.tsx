@@ -20,7 +20,7 @@ import { NetworkMessages } from "@common/network/messages";
 import { ColorPalette } from "@common/models/palette";
 import Dropdown from "@ui/shared/components/dropdown";
 
-const ColorWheel = ({ style }: { style?: string }) => {
+const ColorWheel = ({ className }: { className?: string }) => {
   const [color, setColor] = useState("#6366f1");
   const [harmonyType, setHarmonyType] = useState<HarmonyType>("complementary");
   const [outputColors, setOutputColors] = useState<string[]>([]);
@@ -178,7 +178,7 @@ const ColorWheel = ({ style }: { style?: string }) => {
   }, [outputColors, neutralColor]);
 
   return (
-    <div className={clsx(style)}>
+    <div className={className}>
       <div className="relative flex lg:flex-row flex-col pb-10">
         <div className="flex flex-col gap-4 mx-6">
           <div>
