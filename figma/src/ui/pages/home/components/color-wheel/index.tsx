@@ -30,6 +30,7 @@ const ColorWheel = ({ className }: { className?: string }) => {
   const [shadeCount, setShadeCount] = useState<number>(10);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isValidColorInput, setIsValidColorInput] = useState(true);
 
   const shadeOptions = [
     { value: 3, label: "3 Shades" },
@@ -95,7 +96,15 @@ const ColorWheel = ({ className }: { className?: string }) => {
   const colorValue = (colorValue: string) => {
     const sanitizedColor = colorValue.replace("#", "");
     setColor(sanitizedColor);
-    isValidColor(sanitizedColor) && setColor(sanitizedColor);
+    const isValid = isValidColor(`#${sanitizedColor}`);
+    setIsValidColorInput(isValid);
+
+    if (isValid) {
+      setColor(sanitizedColor);
+    } else {
+      // Still update the input field to show what user typed
+      setColor(sanitizedColor);
+    }
   };
 
   const getTextColor = (bgColor: string) => {
@@ -175,6 +184,19 @@ const ColorWheel = ({ className }: { className?: string }) => {
     return colors;
   }, [outputColors, neutralColor]);
 
+  const getPickerFormat = (_color: string) => {
+    // Check if color starts with # and has exactly 6 characters after
+    const isValidFormat = isValidColor(_color);
+    if (!isValidFormat) {
+      // If color doesn't have #, try adding it
+      const withHash = `#${_color}`;
+      if (/^#[0-9A-Fa-f]{6}$/.test(withHash)) {
+        return withHash;
+      }
+      return "#000000"; // Return white if invalid
+    }
+    return _color;
+  };
   return (
     <div className={className}>
       <div className="relative flex lg:flex-row flex-col pb-10">
@@ -186,14 +208,22 @@ const ColorWheel = ({ className }: { className?: string }) => {
                 maxLength={7}
                 value={color.replace("#", "")}
                 onChange={(e) => colorValue(e.target.value)}
-                className="p-2 pl-[3.7rem] border-[#b0b0b0] border-[0.5px] rounded-2xl focus:outline-none w-full h-full"
+                className={`p-2 pl-[3.7rem] border-[0.5px] rounded-2xl focus:outline-none w-full h-full ${
+                  isValidColorInput ? "border-[#b0b0b0]" : "border-red-500"
+                }`}
               />
               <span className="top-1/2 left-12 absolute text-[#808080] -translate-y-1/2">
                 #
               </span>
-              <span className="-bottom-[1.9rem] left-0 absolute font-light text-[#b0b0b0] text-sm">
-                Select layer or paste Hex code
-              </span>
+              {!isValidColorInput ? (
+                <span className="-bottom-[1.9rem] left-0 absolute font-light text-red-500 text-sm">
+                  Please enter a valid hex color code
+                </span>
+              ) : (
+                <span className="-bottom-[1.9rem] left-0 absolute font-light text-[#b0b0b0] text-sm">
+                  Select layer or paste Hex code
+                </span>
+              )}
 
               <Popover
                 isOpen={isPickerOpen}
@@ -205,11 +235,11 @@ const ColorWheel = ({ className }: { className?: string }) => {
                   <div className="bg-white shadow-lg p-1 border-[#b0b0b0] border-[0.5px] rounded-lg">
                     <HexColorPicker
                       className="!size-[150px]"
-                      color={`#${color}`}
+                      color={getPickerFormat(color)}
                       onChange={(newColor) => {
                         const sanitizedColor = newColor.replace("#", "");
-                        setColor(newColor);
                         setColor(sanitizedColor);
+                        setIsValidColorInput(true);
                       }}
                     />
                   </div>
@@ -241,7 +271,12 @@ const ColorWheel = ({ className }: { className?: string }) => {
           </div>
         </div>
 
-        <div className="flex-1 mt-3">
+        <div
+          className={clsx(
+            `flex-1 mt-3`,
+            isValidColorInput ? "opacity-100" : "opacity-50"
+          )}
+        >
           <div className="flex mx-6 rounded-t-xl overflow-hidden">
             {headColors.map((outputColor, index) => (
               <div

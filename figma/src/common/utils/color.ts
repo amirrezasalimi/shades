@@ -1,3 +1,5 @@
+import { isValidColor } from "./color-wheel";
+
 export function convertHexToRgbRange(hex: string): [number, number, number] {
   const hexValue = hex.replace("#", "");
   const r = parseInt(hexValue.substring(0, 2), 16) / 255;
@@ -216,23 +218,33 @@ const generateShades = (
 function getNeutralColor(hex: string) {
   // Remove # if present and ensure valid 6-digit hex
   hex = hex.replace("#", "");
-  if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
-    throw new Error("Invalid hex color. Use format #RRGGBB");
+  if (isValidColor(hex)) {
+    // throw new Error("Invalid hex color. Use format #RRGGBB");
+    return "#FFFFFF";
   }
 
   // Convert hex to RGB
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
+  try {
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
 
-  // Calculate luminance for grayscale (perceptual weights)
-  const luminance = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    // Check if any RGB values are NaN
+    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+      return "#FFFFFF";
+    }
 
-  // Convert luminance to 2-digit hex
-  const grayHex = luminance.toString(16).padStart(2, "0");
+    // Calculate luminance for grayscale (perceptual weights)
+    const luminance = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
 
-  // Return grayscale hex
-  return `#${grayHex}${grayHex}${grayHex}`;
+    // Convert luminance to 2-digit hex
+    const grayHex = luminance.toString(16).padStart(2, "0");
+
+    // Return grayscale hex
+    return `#${grayHex}${grayHex}${grayHex}`;
+  } catch (error) {
+    return "#FFFFFF"; // Return white as fallback
+  }
 }
 
 export { generateShades, getNeutralColor };
