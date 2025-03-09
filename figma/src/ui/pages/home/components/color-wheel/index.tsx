@@ -24,7 +24,6 @@ const ColorWheel = ({ className }: { className?: string }) => {
   const [color, setColor] = useState("#6366f1");
   const [harmonyType, setHarmonyType] = useState<HarmonyType>("complementary");
   const [outputColors, setOutputColors] = useState<string[]>([]);
-  const [value, setValue] = useState<string>(color || "6366f1");
   const [shadesMap, setShadesMap] = useState<
     Record<string, Record<number, string>>
   >({});
@@ -44,14 +43,18 @@ const ColorWheel = ({ className }: { className?: string }) => {
   }, [color]);
 
   const getColorName = (_color: string) => {
+    _color = _color.replace("#", "");
+
+    const _neutralColor = neutralColor.replace("#", "").toLowerCase();
     // primary, neutral or actual name
-    if (_color == neutralColor) {
+    if (_color.toLowerCase() == _neutralColor) {
       return "neutral";
     }
-    if (_color == color) {
+    if (_color.toLowerCase() == color.toLowerCase()) {
       return "primary";
     }
-    return colorNamer(_color).ntc?.[0]?.name ?? _color;
+
+    return colorNamer(_color).ntc?.[0]?.name ?? `#${_color}`;
   };
 
   useEffect(() => {
@@ -91,7 +94,7 @@ const ColorWheel = ({ className }: { className?: string }) => {
 
   const colorValue = (colorValue: string) => {
     const sanitizedColor = colorValue.replace("#", "");
-    setValue(sanitizedColor);
+    setColor(sanitizedColor);
     isValidColor(sanitizedColor) && setColor(sanitizedColor);
   };
 
@@ -111,13 +114,8 @@ const ColorWheel = ({ className }: { className?: string }) => {
       (acc, _color, index) => {
         const colorName =
           colorNamer(_color).ntc?.[0]?.name ?? `Color ${index + 1}`;
-        const key =
-          _color == neutralColor
-            ? "neutral"
-            : _color == color
-            ? "primary"
-            : _color;
-        acc[key] = {
+        const cname = getColorName(_color);
+        acc[cname] = {
           name: colorName,
           hex: _color,
           shades: shadesMap[_color],
@@ -186,7 +184,7 @@ const ColorWheel = ({ className }: { className?: string }) => {
               <input
                 type="text"
                 maxLength={7}
-                value={value.replace("#", "")}
+                value={color.replace("#", "")}
                 onChange={(e) => colorValue(e.target.value)}
                 className="p-2 pl-[3.7rem] border-[#b0b0b0] border-[0.5px] rounded-2xl focus:outline-none w-full h-full"
               />
@@ -207,11 +205,11 @@ const ColorWheel = ({ className }: { className?: string }) => {
                   <div className="bg-white shadow-lg p-1 border-[#b0b0b0] border-[0.5px] rounded-lg">
                     <HexColorPicker
                       className="!size-[150px]"
-                      color={color}
+                      color={`#${color}`}
                       onChange={(newColor) => {
                         const sanitizedColor = newColor.replace("#", "");
                         setColor(newColor);
-                        setValue(sanitizedColor);
+                        setColor(sanitizedColor);
                       }}
                     />
                   </div>
