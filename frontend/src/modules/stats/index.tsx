@@ -4,9 +4,8 @@ import { api } from "~/shared/utils/trpc/react";
 import { useState } from "react";
 import { TimeframeSelector } from "./components/TimeframeSelector";
 import { StatsCard } from "./components/StatsCard";
-import { ModelUsageChart } from "./components/ModelUsageChart";
-import { GrowthChart } from "./components/GrowthChart";
 import DailyLineChart from "./components/DailyLineChart";
+import RecentActiveUsers from "./RecentActiveUsers";
 
 type MetricTotals = {
   users: number;
@@ -89,6 +88,11 @@ const Stats = () => {
             )}
           </div>
         </StatsCard>
+        {/* Recently Active Users */}
+        <section className="mb-8">
+          <h2 className="mb-4 font-semibold text-2xl">Recently Active Users</h2>
+          <RecentActiveUsers />
+        </section>
       </div>
     </div>
   );

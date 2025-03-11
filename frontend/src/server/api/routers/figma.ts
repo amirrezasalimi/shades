@@ -14,324 +14,361 @@ import generateShades, { getColorName } from "~/shared/utils/color";
 import { error, log } from "console";
 
 export const figmaRouter = createTRPCRouter({
-    checkUser: publicProcedure.input(z.object({
+  checkUser: publicProcedure
+    .input(
+      z.object({
         data: z.object({
-            id: z.string(),
-            name: z.string(),
-            color: z.string(),
-            photo: z.string(),
-            sessionId: z.string().or(z.number()),
-        })
-    })).mutation(async ({ input }) => {
-        try {
-            await pb_admin.collection("figma_users").getFirstListItem(`uid = "${input.data.id}"`);
+          id: z.string(),
+          name: z.string(),
+          color: z.string(),
+          photo: z.string(),
+          sessionId: z.string().or(z.number()),
+        }),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        await pb_admin
+          .collection("figma_users")
+          .getFirstListItem(`uid = "${input.data.id}"`);
+        return true;
+      } catch (e) {
+        if (e instanceof ClientResponseError && e.status == 404) {
+          const user = input.data;
+          // add user
+          try {
+            await pb_admin.collection("figma_users").create({
+              uid: user.id,
+              name: user.name,
+              photo: user.photo,
+              color: user.color,
+              session: user.sessionId,
+              password: "12345678",
+              passwordConfirm: "12345678",
+            });
             return true;
-        } catch (e) {
-            if (e instanceof ClientResponseError && e.status == 404) {
-                const user = input.data;
-                // add user
-                try {
-                    await pb_admin.collection("figma_users").create({
-                        uid: user.id,
-                        name: user.name,
-                        photo: user.photo,
-                        color: user.color,
-                        session: user.sessionId,
-                        password: "12345678",
-                        passwordConfirm: "12345678"
-                    })
-                    return true;
-                } catch (e) {
-                    console.error(e);
-                    return false;
-                }
-            }
+          } catch (e) {
+            console.error(e);
             return false;
+          }
         }
+        return false;
+      }
     }),
-    createPalette: publicProcedure.input(z.object({
+  createPalette: publicProcedure
+    .input(
+      z.object({
         uid: z.string(),
         prompt: z.string().min(3).max(1000),
-    })).mutation(async ({ input, ctx }) => {
-        const user_id = await getFigmaUserId(input.uid);
-        if (!user_id) {
-            throw new Error("User not found");
-        }
-        const ip = getRequestIp(ctx.req as unknown as Request);
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user_id = await getFigmaUserId(input.uid);
+      if (!user_id) {
+        throw new Error("User not found");
+      }
+      const ip = getRequestIp(ctx.req as unknown as Request);
 
-        // rate limits
-        const limits = (await Config.get(CONFIG_KEYS.FIGMA_CREATE_PALETTE_LIMIT)) as string;
-        if (!limits) {
-            throw new Error("System is busy, please try again later");
-        }
-        const limits_arr = limits.split(",");
-        const per_time = limits_arr[0] ?? "1d";
-        const per_time_ms = ms(per_time);
-        // utc datetime
-        const per_time_date = new Date(Date.now() - per_time_ms).toISOString();
+      // rate limits
+      const limits = (await Config.get(
+        CONFIG_KEYS.FIGMA_CREATE_PALETTE_LIMIT
+      )) as string;
+      if (!limits) {
+        throw new Error("System is busy, please try again later");
+      }
+      const limits_arr = limits.split(",");
+      const per_time = limits_arr[0] ?? "1d";
+      const per_time_ms = ms(per_time);
+      // utc datetime
+      const per_time_date = new Date(Date.now() - per_time_ms).toISOString();
 
-        const max_creation = parseInt(limits_arr[1] ?? "10");
+      const max_creation = parseInt(limits_arr[1] ?? "10");
 
-        let lastPalettes: PalettesResponse<Record<string, string>>[] = [];
-        try {
-            lastPalettes = await pb_admin.collection("palettes").getFullList({
-                limit: 100,
-                sort: "-created",
-                fields: "created",
-                filter: `ip = "${ip}" && created >= "${per_time_date}"`,
-                page: 1,
-            });
-        }
-        catch (e) {
-            console.error(e);
-        }
-        if (lastPalettes.length >= max_creation) {
-            throw new Error(`you reached the limit of ${max_creation} palettes per ${prettyMilliseconds(per_time_ms)}`);
-        }
+      let lastPalettes: PalettesResponse<Record<string, string>>[] = [];
+      try {
+        lastPalettes = await pb_admin.collection("palettes").getFullList({
+          limit: 100,
+          sort: "-created",
+          fields: "created",
+          filter: `ip = "${ip}" && created >= "${per_time_date}"`,
+          page: 1,
+        });
+      } catch (e) {
+        console.error(e);
+      }
+      if (lastPalettes.length >= max_creation) {
+        throw new Error(
+          `you reached the limit of ${max_creation} palettes per ${prettyMilliseconds(per_time_ms)}`
+        );
+      }
 
-        // make
-        try {
-            const res = await aiCreatePalette(input.prompt);
-            const add_res = await pb_admin.collection("palettes").create({
-                data: res.colors,
-                prompt: input.prompt,
-                ai_prompt: res.ai_prompt,
-                ip,
-                model_id: res.ai_model.name,
-                usage: res.usage,
-                referral: "figma",
-                figma_user: user_id,
-                cost: res.cost,
-                description: res.description,
-            })
-            return add_res.id;
-        } catch (e) {
-            throw new Error("Failed to save palette");
-        }
+      // make
+      try {
+        const res = await aiCreatePalette(input.prompt);
+        const add_res = await pb_admin.collection("palettes").create({
+          data: res.colors,
+          prompt: input.prompt,
+          ai_prompt: res.ai_prompt,
+          ip,
+          model_id: res.ai_model.name,
+          usage: res.usage,
+          referral: "figma",
+          figma_user: user_id,
+          cost: res.cost,
+          description: res.description,
+        });
+        return add_res.id;
+      } catch (e) {
+        throw new Error("Failed to save palette");
+      }
     }),
-    getPalette: publicProcedure.input(z.object({
+  getPalette: publicProcedure
+    .input(
+      z.object({
         id: z.string(),
-    })).query(async ({ input }) => {
-        try {
-            const res: PalettesResponse<Record<string, string>> = (await pb_admin.collection("palettes").getOne(input.id, {
-                fields: "id,prompt,created,data,description"
-            }));
-            const colors: Record<string, {
-                name: string,
-                hex: string,
-                shades: Record<number, string>
-            }> = {};
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const res: PalettesResponse<Record<string, string>> = await pb_admin
+          .collection("palettes")
+          .getOne(input.id, {
+            fields: "id,prompt,created,data,description",
+          });
+        const colors: Record<
+          string,
+          {
+            name: string;
+            hex: string;
+            shades: Record<number, string>;
+          }
+        > = {};
 
-            const data = res.data;
-            // remove description
-            if (data?.description) {
-                delete data.description;
-            }
-            const alertColors = ["success", "warning", "error", "info"];
-            for (const key in data) {
-                const hex = data[key]!;
-                let shades = generateShades(hex);
-                // if alert color , only pick 3 shades
-                if (alertColors.includes(key)) {
-                    const simpleShades = [200, 500, 800];
-                    shades = Object.fromEntries(Object.entries(shades).filter(([k]) => simpleShades.includes(parseInt(k))));
-                }
-                colors[key] = {
-                    name: getColorName(hex),
-                    hex,
-                    shades
-                }
-            }
-
-            return {
-                ...res,
-                colors: res.data,
-                fullColors: colors,
-                data: null
-            }
-        } catch (e) {
-            error(e);
-            throw new Error("Palette not found");
+        const data = res.data;
+        // remove description
+        if (data?.description) {
+          delete data.description;
         }
-    }),
-    getUserLimits: publicProcedure.input(z.object({
-        uid: z.string(),
-    })).query(async ({ input, ctx }) => {
-        const ip = getRequestIp(ctx.req as unknown as Request);
-        if (!ip) {
-            throw new Error("Failed to get IP");
+        const alertColors = ["success", "warning", "error", "info"];
+        for (const key in data) {
+          const hex = data[key]!;
+          let shades = generateShades(hex);
+          // if alert color , only pick 3 shades
+          if (alertColors.includes(key)) {
+            const simpleShades = [200, 500, 800];
+            shades = Object.fromEntries(
+              Object.entries(shades).filter(([k]) =>
+                simpleShades.includes(parseInt(k))
+              )
+            );
+          }
+          colors[key] = {
+            name: getColorName(hex),
+            hex,
+            shades,
+          };
         }
 
-        const user_id = await getFigmaUserId(input.uid);
-        if (!user_id) {
-            throw new Error("User not found");
-        }
-        const limits = (await Config.get(CONFIG_KEYS.FIGMA_CREATE_PALETTE_LIMIT)) as string;
-        if (!limits) {
-            throw new Error("System is busy, please try again later");
-        }
-        const limits_arr = limits.split(",");
-        const per_time = limits_arr[0] ?? "1d";
-        const max_creation = parseInt(limits_arr[1] ?? "10");
-        let user_creation = 0;
-        try {
-            const res = await pb_admin.collection("palettes").getFullList({
-                filter: `created >= "${new Date(Date.now() - ms(per_time)).toISOString()}"`,
-            });
-            user_creation = res.length;
-        } catch (e) {
-            console.error(e);
-        }
         return {
-            per_time,
-            max_creation,
-            user_creation
-        }
+          ...res,
+          colors: res.data,
+          fullColors: colors,
+          data: null,
+        };
+      } catch (e) {
+        error(e);
+        throw new Error("Palette not found");
+      }
+    }),
+  getUserLimits: publicProcedure
+    .input(
+      z.object({
+        uid: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const ip = getRequestIp(ctx.req as unknown as Request);
+      if (!ip) {
+        throw new Error("Failed to get IP");
+      }
+
+      const user_id = await getFigmaUserId(input.uid);
+      if (!user_id) {
+        throw new Error("User not found");
+      }
+      const limits = (await Config.get(
+        CONFIG_KEYS.FIGMA_CREATE_PALETTE_LIMIT
+      )) as string;
+      if (!limits) {
+        throw new Error("System is busy, please try again later");
+      }
+      const limits_arr = limits.split(",");
+      const per_time = limits_arr[0] ?? "1d";
+      const max_creation = parseInt(limits_arr[1] ?? "10");
+      let user_creation = 0;
+      try {
+        const res = await pb_admin.collection("palettes").getFullList({
+          filter: `created >= "${new Date(Date.now() - ms(per_time)).toISOString()}"`,
+        });
+        user_creation = res.length;
+      } catch (e) {
+        console.error(e);
+      }
+      return {
+        per_time,
+        max_creation,
+        user_creation,
+      };
     }),
 
-    recentPalettes: publicProcedure.input(z.object({
+  recentPalettes: publicProcedure
+    .input(
+      z.object({
         page: z.number().int().positive().default(1),
         limit: z.number().int().positive().default(15),
         date_from: z.string().optional(),
-    })).query(async ({ input }) => {
-        try {
-            const res = await pb_admin.collection("figma_recents_extra").getList(input.page, input.limit, {
-                limit: input.limit,
-                sort: "-created",
-                expand: "palette",
-                fields: "id,expand.palette,fork_count",
-                page: input.page,
-                filter: input.date_from ? `created > "${input.date_from}"` : "",
-            });
-            const data = res as unknown as ListResult<{
-                fork_count: number,
-                expand: {
-                    palette: PalettesResponse<Record<string, string>>
-                }
-            }>
-            const items = data.items.map(item => ({
-                ...item.expand.palette,
-                fork_count: item.fork_count,
-                colors: item.expand.palette?.data,
-                data: null
-            }))
-            return {
-                items,
-                totalItems: data.totalItems,
-                totalPages: data.totalPages,
-                page: data.page,
-                perPage: data.perPage,
-            }
-        }
-        catch (e) {
-            console.error(e);
-            throw new Error("Failed to get recent palettes");
-        }
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const res = await pb_admin
+          .collection("figma_recents_extra")
+          .getList(input.page, input.limit, {
+            limit: input.limit,
+            sort: "-created",
+            expand: "palette",
+            fields: "id,expand.palette,fork_count",
+            page: input.page,
+            filter: input.date_from ? `created > "${input.date_from}"` : "",
+          });
+        const data = res as unknown as ListResult<{
+          fork_count: number;
+          expand: {
+            palette: PalettesResponse<Record<string, string>>;
+          };
+        }>;
+        const items = data.items.map((item) => ({
+          ...item.expand.palette,
+          fork_count: item.fork_count,
+          colors: item.expand.palette?.data,
+          data: null,
+        }));
+        return {
+          items,
+          totalItems: data.totalItems,
+          totalPages: data.totalPages,
+          page: data.page,
+          perPage: data.perPage,
+        };
+      } catch (e) {
+        console.error(e);
+        throw new Error("Failed to get recent palettes");
+      }
     }),
-    forkPalette: publicProcedure.input(z.object({
+  forkPalette: publicProcedure
+    .input(
+      z.object({
         uid: z.string(),
         palette_id: z.string(),
-    })).mutation(async ({ input, ctx }) => {
-        try {
-            const ip = getRequestIp(ctx.req as unknown as Request);
-            if (!ip) {
-                throw new Error("Failed to get IP");
-            }
-            const user_id = await getFigmaUserId(input.uid);
-            if (!user_id) {
-                throw new Error("User not found");
-            }
-            // rate limit
-            let lastRecord: PalettesResponse<Record<string, string>>[] = [];
-            try {
-                lastRecord = await pb_admin.collection("figma_forks").getFullList({
-                    limit: 2,
-                    sort: "-created",
-                    fields: "created",
-                    filter: `user = "${user_id}" && palette = "${input.palette_id}"`,
-                    page: 1,
-                });
-            }
-            catch (e) {
-                console.error(e);
-            }
-            const delay_ms = ms("2m");
-            const last = lastRecord?.[0];
-            if (last) {
-                const last_created = new Date(last.created).getTime();
-                const now = new Date().getTime();
-                const diff = now - last_created;
-                if (diff < delay_ms) {
-                    const remainingTime = prettyMilliseconds(delay_ms - diff);
-                    throw new Error(`You can fork a palette in ${remainingTime}`);
-                }
-            }
-
-            // add fork
-            try {
-                await pb_admin.collection("figma_forks").create({
-                    user: user_id,
-                    palette: input.palette_id,
-                    ip
-                })
-            } catch (e) {
-                console.error(e);
-            }
-        } catch (e) {
-
-        }
-    }),
-    viewPlugin: publicProcedure.input(
-        z.object({
-            uid: z.string(),
-        })
-    ).mutation(async ({ input, ctx }) => {
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
         const ip = getRequestIp(ctx.req as unknown as Request);
         if (!ip) {
-            throw new Error("Failed to get IP");
+          throw new Error("Failed to get IP");
         }
-        // same as fork but for viewing
+        const user_id = await getFigmaUserId(input.uid);
+        if (!user_id) {
+          throw new Error("User not found");
+        }
+        // rate limit
+        let lastRecord: PalettesResponse<Record<string, string>>[] = [];
         try {
-            const user_id = await getFigmaUserId(input.uid);
-            if (!user_id) {
-                throw new Error("User not found");
-            }
-            // rate limit
-            let lastRecord: PalettesResponse<Record<string, string>>[] = [];
-            try {
-                lastRecord = await pb_admin.collection("figma_views").getFullList({
-                    limit: 2,
-                    sort: "-created",
-                    fields: "created",
-                    filter: `user = "${user_id}"`,
-                    page: 1,
-                });
-            }
-            catch (e) {
-                console.error(e);
-            }
-            const delay_ms = ms("5m");
-            const last = lastRecord?.[0];
-            if (last) {
-                const last_created = new Date(last.created).getTime();
-                const now = new Date().getTime();
-                const diff = now - last_created;
-                if (diff < delay_ms) {
-                    const remainingTime = prettyMilliseconds(delay_ms - diff);
-                    throw new Error(`You can view a palette in ${remainingTime}`);
-                }
-            }
-            // add view
-            try {
-                await pb_admin.collection("figma_views").create({
-                    user: user_id,
-                    ip
-                })
-            } catch (e) {
-                console.error(e);
-            }
+          lastRecord = await pb_admin.collection("figma_forks").getFullList({
+            limit: 2,
+            sort: "-created",
+            fields: "created",
+            filter: `user = "${user_id}" && palette = "${input.palette_id}"`,
+            page: 1,
+          });
         } catch (e) {
-
+          console.error(e);
         }
+        const delay_ms = ms("2m");
+        const last = lastRecord?.[0];
+        if (last) {
+          const last_created = new Date(last.created).getTime();
+          const now = new Date().getTime();
+          const diff = now - last_created;
+          if (diff < delay_ms) {
+            const remainingTime = prettyMilliseconds(delay_ms - diff);
+            throw new Error(`You can fork a palette in ${remainingTime}`);
+          }
+        }
+
+        // add fork
+        try {
+          await pb_admin.collection("figma_forks").create({
+            user: user_id,
+            palette: input.palette_id,
+            ip,
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      } catch (e) {}
+    }),
+  viewPlugin: publicProcedure
+    .input(
+      z.object({
+        uid: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const ip = getRequestIp(ctx.req as unknown as Request);
+      if (!ip) {
+        throw new Error("Failed to get IP");
+      }
+      // same as fork but for viewing
+      try {
+        const user_id = await getFigmaUserId(input.uid);
+        if (!user_id) {
+          throw new Error("User not found");
+        }
+        // rate limit
+        let lastRecord: PalettesResponse<Record<string, string>>[] = [];
+        try {
+          lastRecord = await pb_admin.collection("figma_views").getFullList({
+            limit: 2,
+            sort: "-created",
+            fields: "created",
+            filter: `user = "${user_id}"`,
+            page: 1,
+          });
+        } catch (e) {
+          console.error(e);
+        }
+        const delay_ms = ms("5m");
+        const last = lastRecord?.[0];
+        if (last) {
+          const last_created = new Date(last.created).getTime();
+          const now = new Date().getTime();
+          const diff = now - last_created;
+          if (diff < delay_ms) {
+            const remainingTime = prettyMilliseconds(delay_ms - diff);
+            throw new Error(`You can view a palette in ${remainingTime}`);
+          }
+        }
+        // add view
+        try {
+          await pb_admin.collection("figma_views").create({
+            user: user_id,
+            ip,
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      } catch (e) {}
     }),
 });

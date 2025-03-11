@@ -2,6 +2,7 @@ import { pb_admin } from "~/server/pocketbase";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { FigmaUsersRecord } from "~/server/pocketbase-schema";
 
 interface DailyStats {
   users: number;
@@ -181,7 +182,6 @@ const timeRouter = createTRPCRouter({
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
         const dateFilter = `created >= '${startDate.toISOString()}'`;
-        console.log("dateFilter", dateFilter);
 
         const [palettesDaily, usersDaily, viewsDaily, forksDaily] =
           await Promise.all([
@@ -197,8 +197,9 @@ const timeRouter = createTRPCRouter({
             }),
             pb_admin.collection("figma_views").getFullList({
               filter: dateFilter,
-              fields: "created",
+              fields: "created,user,expand.user",
               sort: "+created",
+              expand: "user",
             }),
             pb_admin.collection("figma_forks").getFullList({
               filter: dateFilter,
@@ -206,12 +207,18 @@ const timeRouter = createTRPCRouter({
               sort: "+created",
             }),
           ]);
-        console.log(`usersDaily`, usersDaily);
 
         // Generate an array of all dates in range
         const dailyData: Record<
           string,
-          { users: number; palettes: number; views: number; forks: number }
+          {
+            users: number;
+            palettes: number;
+            views: number;
+            forks: number;
+
+            unique_views: number;
+          }
         > = {};
 
         // Create entries for each day in the range
@@ -225,6 +232,7 @@ const timeRouter = createTRPCRouter({
             palettes: 0,
             views: 0,
             forks: 0,
+            unique_views: 0,
           };
         }
 
@@ -251,6 +259,35 @@ const timeRouter = createTRPCRouter({
         countByDay(viewsDaily, "views");
         countByDay(forksDaily, "forks");
 
+        const _views = viewsDaily as Array<{
+          created: string;
+          expand: {
+            user: FigmaUsersRecord;
+          };
+        }>;
+
+        // Count unique views
+        const uniqueUsersByDay: Record<string, Set<string>> = {};
+
+        _views.forEach((view) => {
+          if (!view.created || !view.expand?.user?.uid) return;
+
+          const date = view.created.split(" ")[0] ?? "";
+          if (!uniqueUsersByDay[date]) {
+            uniqueUsersByDay[date] = new Set<string>();
+          }
+
+          // Add user ID to the set for this date
+          uniqueUsersByDay[date].add(view.expand.user.uid);
+        });
+
+        // Update the dailyData with unique view counts
+        Object.entries(uniqueUsersByDay).forEach(([date, userSet]) => {
+          if (dailyData[date]) {
+            dailyData[date].unique_views = userSet.size;
+          }
+        });
+
         const result = Object.entries(dailyData)
           .map(([date, stats]) => ({ date, ...stats }))
           .sort((a, b) => a.date.localeCompare(b.date));
@@ -262,6 +299,47 @@ const timeRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch daily activity data",
+        });
+      }
+    }),
+
+  recentActiveUsers: publicProcedure
+    .input(z.object({ count: z.number().int().positive() }))
+    .query(async ({ input: { count } }) => {
+      try {
+        // Fetch recent views with user information
+        const recentViews = await pb_admin
+          .collection("figma_views")
+          .getList(1, count, {
+            sort: "-created",
+            fields: "user,created,expand.user",
+            expand: "user",
+          });
+
+        // Create a map to store unique users by their ID
+        const uniqueUsers = new Map();
+
+        recentViews.items.forEach((view) => {
+          const user = view.expand as {
+            user: FigmaUsersRecord;
+          };
+          if (user && !uniqueUsers.has(view.user)) {
+            uniqueUsers.set(view.user, {
+              id: view.user,
+              name: user.user.name ?? "Unknown User",
+              avatar: user.user.photo ?? null,
+              lastActive: view.created,
+            });
+          }
+        });
+
+        // Convert the map to an array and limit to requested count
+        return Array.from(uniqueUsers.values()).slice(0, count);
+      } catch (error) {
+        console.error("Recent Active Users Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch recent active users",
         });
       }
     }),

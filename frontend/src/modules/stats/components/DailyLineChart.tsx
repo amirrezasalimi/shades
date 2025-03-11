@@ -19,6 +19,7 @@ interface DailyStatsData {
   palettes: number;
   views: number;
   forks: number;
+  unique_views: number;
 }
 
 interface DailyLineChartProps {
@@ -36,6 +37,7 @@ export default function DailyLineChart({ data }: DailyLineChartProps) {
         users: Number(item.users) || 0,
         palettes: Number(item.palettes) || 0,
         views: Number(item.views) || 0,
+        unique_views: Number(item.unique_views) || 0,
         forks: Number(item.forks) || 0,
         // Format date for display
         formattedDate: new Date(item.date).toLocaleDateString("en-US", {
@@ -44,8 +46,6 @@ export default function DailyLineChart({ data }: DailyLineChartProps) {
         }),
       }));
   }, [data]);
-
-  console.log("Chart data:", chartData);
 
   // Calculate reasonable intervals for x-axis ticks based on data length
   const tickInterval = Math.max(1, Math.floor(chartData.length / 10));
@@ -136,6 +136,16 @@ export default function DailyLineChart({ data }: DailyLineChartProps) {
             dot={{ r: 3, strokeWidth: 1, fill: "#06b6d4" }}
             activeDot={{ r: 5 }}
             name="Views"
+            isAnimationActive={true}
+          />
+          <Line
+            type="monotone"
+            dataKey="unique_views"
+            stroke="#f43f5e" // Red to match your palette colors
+            strokeWidth={2}
+            dot={{ r: 3, strokeWidth: 1, fill: "#f43f5e" }}
+            activeDot={{ r: 5 }}
+            name="Unique Views"
             isAnimationActive={true}
           />
           <Line
