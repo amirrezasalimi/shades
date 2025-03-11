@@ -236,7 +236,8 @@ const timeRouter = createTRPCRouter({
           items.forEach((item) => {
             if (!item.created) return;
             const date = item.created.split(" ")[0] as unknown as string;
-            if (dailyData[date]) {
+            if (dailyData[date]?.[key] !== undefined) {
+              // @ts-ignore
               dailyData[date][key]++;
             } else {
               // console.log(`Date not in range: ${date} for ${key}`);
