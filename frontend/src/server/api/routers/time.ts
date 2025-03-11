@@ -2,7 +2,10 @@ import { pb_admin } from "~/server/pocketbase";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { FigmaUsersRecord } from "~/server/pocketbase-schema";
+import type {
+  FigmaUsersRecord,
+  FigmaUsersResponse,
+} from "~/server/pocketbase-schema";
 
 interface DailyStats {
   users: number;
@@ -321,7 +324,7 @@ const timeRouter = createTRPCRouter({
 
         recentViews.items.forEach((view) => {
           const user = view.expand as {
-            user: FigmaUsersRecord;
+            user: FigmaUsersResponse;
           };
           if (user && !uniqueUsers.has(view.user)) {
             uniqueUsers.set(view.user, {
@@ -329,17 +332,84 @@ const timeRouter = createTRPCRouter({
               name: user.user.name ?? "Unknown User",
               avatar: user.user.photo ?? null,
               lastActive: view.created,
+              created: user.user.created,
             });
           }
         });
 
         // Convert the map to an array and limit to requested count
-        return Array.from(uniqueUsers.values()).slice(0, count);
+        return Array.from(uniqueUsers.values()).slice(0, count) as Array<{
+          id: string;
+          name: string;
+          avatar: string | null;
+          lastActive: string;
+          created: string;
+        }>;
       } catch (error) {
         console.error("Recent Active Users Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch recent active users",
+        });
+      }
+    }),
+
+  userStats: publicProcedure
+    .input(
+      z.object({
+        userIds: z.array(z.string()),
+      })
+    )
+    .query(async ({ input: { userIds } }) => {
+      try {
+        if (userIds.length === 0) {
+          return {};
+        }
+
+        // Initialize stats for all requested users
+        const userStats: Record<
+          string,
+          { palettes: number; views: number; forks: number }
+        > = {};
+
+        userIds.forEach((id) => {
+          userStats[id] = { palettes: 0, views: 0, forks: 0 };
+        });
+
+        // Fetch counts for each user individually
+        await Promise.all(
+          userIds.map(async (userId) => {
+            const userFilter = `user = "${userId}"`;
+
+            const [palettesList, viewsList, forksList] = await Promise.all([
+              pb_admin.collection("palettes").getList(1, 1, {
+                filter: `figma_user = "${userId}"`,
+                fields: "id",
+              }),
+              pb_admin.collection("figma_views").getList(1, 1, {
+                filter: userFilter,
+                fields: "id",
+              }),
+              pb_admin.collection("figma_forks").getList(1, 1, {
+                filter: userFilter,
+                fields: "id",
+              }),
+            ]);
+
+            userStats[userId] = {
+              palettes: palettesList.totalItems,
+              views: viewsList.totalItems,
+              forks: forksList.totalItems,
+            };
+          })
+        );
+
+        return userStats;
+      } catch (error) {
+        console.error("User Stats Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch user statistics",
         });
       }
     }),
