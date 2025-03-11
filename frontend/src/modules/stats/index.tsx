@@ -1,26 +1,12 @@
 "use client";
-import { Spinner } from "@nextui-org/react";
-import {
-  Bar,
-  BarChart,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-} from "recharts";
+import { Skeleton, Spinner } from "@nextui-org/react";
 import { api } from "~/shared/utils/trpc/react";
 import { useState } from "react";
 import { TimeframeSelector } from "./components/TimeframeSelector";
 import { StatsCard } from "./components/StatsCard";
 import { ModelUsageChart } from "./components/ModelUsageChart";
 import { GrowthChart } from "./components/GrowthChart";
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-};
+import DailyLineChart from "./components/DailyLineChart";
 
 type MetricTotals = {
   users: number;
@@ -33,8 +19,9 @@ const Stats = () => {
   const [selectedDays, setSelectedDays] = useState(30);
   const stats = api.time.stats.useQuery({ days: selectedDays });
   const detailedStats = api.time.detailedStats.useQuery({ days: selectedDays });
+  const dailyActivity = api.time.dailyActivity.useQuery({ days: selectedDays });
 
-  if (stats.isLoading || detailedStats.isLoading) {
+  if (stats.isLoading || detailedStats.isLoading || dailyActivity.isLoading) {
     return (
       <div className="flex justify-center items-center bg-black/95 min-h-screen">
         <Spinner size="lg" color="primary" />
@@ -83,74 +70,25 @@ const Stats = () => {
           ))}
         </div>
 
-        {/* Charts Grid */}
-        <div className="gap-6 grid grid-cols-1 lg:grid-cols-2">
-          <StatsCard
-            title="Activity Overview"
-            className="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 border border-white/10"
-          >
-            <div className="h-[400px]">
-              <ResponsiveContainer>
-                <BarChart data={stats.data} className="*:outline-none">
-                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={formatDate}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#9ca3af" }}
-                  />
-                  <Bar
-                    dataKey="users"
-                    stackId="a"
-                    fill="#8b5cf6"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="forks"
-                    stackId="a"
-                    fill="#3b82f6"
-                    radius={[0, 0, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="views"
-                    stackId="a"
-                    fill="#06b6d4"
-                    radius={[0, 0, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="palettes"
-                    stackId="a"
-                    fill="#22c55e"
-                    radius={[0, 0, 4, 4]}
-                  />
-                  <Legend iconType="circle" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </StatsCard>
-
-          <StatsCard
-            title="Model Usage"
-            className="bg-white/5 backdrop-blur-sm p-6 border border-white/10"
-          >
-            <ModelUsageChart data={detailedStats.data?.models ?? {}} />
-          </StatsCard>
-
-          <StatsCard
-            title="Traffic Sources"
-            className="bg-white/5 backdrop-blur-sm p-6 border border-white/10"
-          >
-            <ModelUsageChart data={detailedStats.data?.referral ?? {}} />
-          </StatsCard>
-
-          <StatsCard
-            title="Palette Growth"
-            className="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 border border-white/10"
-          >
-            <GrowthChart data={detailedStats.data?.growth ?? []} />
-          </StatsCard>
-        </div>
+        {/* Daily Activity Line Chart */}
+        <StatsCard
+          title="Daily Activity"
+          className="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 border border-white/10"
+        >
+          <div className="h-[400px]">
+            {dailyActivity.isLoading ? (
+              <div className="w-full h-full">
+                <Skeleton className="w-full h-full" />
+              </div>
+            ) : dailyActivity.data && dailyActivity.data.length > 0 ? (
+              <DailyLineChart data={dailyActivity.data} />
+            ) : (
+              <div className="flex justify-center items-center w-full h-full text-gray-400">
+                No activity data available for the selected time period
+              </div>
+            )}
+          </div>
+        </StatsCard>
       </div>
     </div>
   );

@@ -173,6 +173,97 @@ const timeRouter = createTRPCRouter({
         });
       }
     }),
+
+  dailyActivity: publicProcedure
+    .input(z.object({ days: z.number().positive() }))
+    .query(async ({ input: { days } }) => {
+      try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        const dateFilter = `created >= '${startDate.toISOString()}'`;
+        console.log("dateFilter", dateFilter);
+
+        const [palettesDaily, usersDaily, viewsDaily, forksDaily] =
+          await Promise.all([
+            pb_admin.collection("palettes").getFullList({
+              filter: dateFilter,
+              fields: "created",
+              sort: "+created",
+            }),
+            pb_admin.collection("figma_users").getFullList({
+              filter: dateFilter,
+              fields: "created",
+              sort: "+created",
+            }),
+            pb_admin.collection("figma_views").getFullList({
+              filter: dateFilter,
+              fields: "created",
+              sort: "+created",
+            }),
+            pb_admin.collection("figma_forks").getFullList({
+              filter: dateFilter,
+              fields: "created",
+              sort: "+created",
+            }),
+          ]);
+        console.log(`usersDaily`, usersDaily);
+
+        // Generate an array of all dates in range
+        const dailyData: Record<
+          string,
+          { users: number; palettes: number; views: number; forks: number }
+        > = {};
+
+        // Create entries for each day in the range
+        for (let i = 0; i < days; i++) {
+          const date = new Date(startDate);
+          date.setDate(date.getDate() + i);
+          const dateStr = date.toISOString().split("T")[0] as unknown as string;
+
+          dailyData[dateStr] = {
+            users: 0,
+            palettes: 0,
+            views: 0,
+            forks: 0,
+          };
+        }
+
+        // Helper function to count items per day
+        const countByDay = (
+          items: Array<{ created: string }>,
+          key: keyof (typeof dailyData)[string]
+        ) => {
+          items.forEach((item) => {
+            if (!item.created) return;
+            const date = item.created.split(" ")[0] as unknown as string;
+            if (dailyData[date]) {
+              dailyData[date][key]++;
+            } else {
+              // console.log(`Date not in range: ${date} for ${key}`);
+            }
+          });
+        };
+
+        // Count all items
+        countByDay(palettesDaily, "palettes");
+        countByDay(usersDaily, "users");
+        countByDay(viewsDaily, "views");
+        countByDay(forksDaily, "forks");
+
+        const result = Object.entries(dailyData)
+          .map(([date, stats]) => ({ date, ...stats }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        // console.log("Returning daily activity data:", result);
+        return result;
+      } catch (error) {
+        console.error("Daily Activity Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch daily activity data",
+        });
+      }
+    }),
 });
 
 export default timeRouter;
