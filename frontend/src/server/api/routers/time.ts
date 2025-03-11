@@ -281,12 +281,14 @@ const timeRouter = createTRPCRouter({
           }
 
           // Add user ID to the set for this date
+          // @ts-ignore
           uniqueUsersByDay[date].add(view.expand.user.uid);
         });
 
         // Update the dailyData with unique view counts
         Object.entries(uniqueUsersByDay).forEach(([date, userSet]) => {
           if (dailyData[date]) {
+            // @ts-ignore
             dailyData[date].unique_views = userSet.size;
           }
         });
