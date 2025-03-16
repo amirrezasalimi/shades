@@ -1,7 +1,6 @@
 import { TOOLSTACK } from "@ui/shared/constants/constants";
 import logo from "@ui/assets/shades.png";
-import Link from "@ui/assets/link.svg";
-import discord from "@ui/assets/discord.svg";
+import telegram from "@ui/assets/telegram.svg";
 
 const Header = () => {
   return (
@@ -18,20 +17,16 @@ const Header = () => {
           <div className="flex items-center pt-1">
             <img className="w-24" src={logo} alt="logo" />
             <div className="pl-2 font-light text-[16px] text-gray-500">
-              /Figma plugin
+              /plugin
             </div>
           </div>
         </div>
       </a>
       <div className="flex items-center space-x-2">
-        <a href={TOOLSTACK} target="_blank">
-          <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-14 h-14 cursor-pointer">
-            <img width={22} src={Link} alt="" />
-          </div>
-        </a>
-        <a href="https://discord.gg/Gzep8WsF3y" target="_blank">
-          <div className="flex justify-center items-center border-gray-300 border rounded-2xl w-14 h-14 cursor-pointer">
-            <img width={22} src={discord} alt="" />
+        <a href="https://t.me/+cJB9g6iFxP1mN2E0" target="_blank">
+          <div className="flex justify-center items-center gap-2 px-4 border border-gray-300 rounded-2xl w-auto h-14 text-[#24A1DE] hover:scale-105 transition-transform cursor-pointer">
+            <img width={22} src={telegram} alt="community" />
+            <span className="text-sm">Community</span>
           </div>
         </a>
       </div>
