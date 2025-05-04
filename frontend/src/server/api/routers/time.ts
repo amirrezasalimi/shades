@@ -182,8 +182,9 @@ const timeRouter = createTRPCRouter({
     .input(z.object({ days: z.number().positive() }))
     .query(async ({ input: { days } }) => {
       try {
+        // Use yesterday as the starting point and add 1 to include today
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - days);
+        startDate.setDate(startDate.getDate() - (days - 1));
         const dateFilter = `created >= '${startDate.toISOString()}'`;
 
         const [palettesDaily, usersDaily, viewsDaily, forksDaily] =
@@ -219,12 +220,11 @@ const timeRouter = createTRPCRouter({
             palettes: number;
             views: number;
             forks: number;
-
             unique_views: number;
           }
         > = {};
 
-        // Create entries for each day in the range
+        // Create entries for each day in the range (including today)
         for (let i = 0; i < days; i++) {
           const date = new Date(startDate);
           date.setDate(date.getDate() + i);

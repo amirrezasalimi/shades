@@ -9,7 +9,10 @@ export function convertHexToRgbRange(hex: string): [number, number, number] {
   return [r, g, b];
 }
 
-const generateShades = (hex: string, count: number = 10): Record<number, string> => {
+const generateShades = (
+  hex: string,
+  count: number = 10
+): Record<number, string> => {
   if (!hex.startsWith("#")) hex = "#" + hex;
   if (!/^#([0-9A-Fa-f]{6})$/.test(hex)) {
     console.error("Invalid hex color");
@@ -20,20 +23,31 @@ const generateShades = (hex: string, count: number = 10): Record<number, string>
     return [
       parseInt(v.slice(0, 2), 16),
       parseInt(v.slice(2, 4), 16),
-      parseInt(v.slice(4, 6), 16)
+      parseInt(v.slice(4, 6), 16),
     ];
   };
   const rgbToHsl = ([r, g, b]: number[]): [number, number, number] => {
-    r /= 255; g /= 255; b /= 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h = 0, s = 0, l = (max + min) / 2;
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b),
+      min = Math.min(r, g, b);
+    let h = 0,
+      s = 0,
+      l = (max + min) / 2;
     if (max !== min) {
       const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
       }
       h /= 6;
     }
@@ -47,25 +61,28 @@ const generateShades = (hex: string, count: number = 10): Record<number, string>
       const hue2rgb = (p: number, q: number, t: number): number => {
         if (t < 0) t += 1;
         if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
-        if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
         return p;
       };
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
+      r = hue2rgb(p, q, h + 1 / 3);
       g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
+      b = hue2rgb(p, q, h - 1 / 3);
     }
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   };
   const rgbToHex = ([r, g, b]: number[]): string =>
-    "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+    "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 
   const [r, g, b] = hexToRgb(hex);
   const [h, s] = rgbToHsl([r, g, b]);
-  const shadeLevels = [50,100,200,300,400,500,600,700,800,900].slice(0, count);
+  const shadeLevels = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].slice(
+    0,
+    count
+  );
   return shadeLevels.reduce((acc, level, i) => {
     const t = count > 1 ? i / (count - 1) : 0;
     const newL = 1 - t;
