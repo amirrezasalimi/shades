@@ -148,11 +148,11 @@ const ColorWheel = ({ className }: { className?: string }) => {
         return acc;
       }, {} as ColorPalette);
 
-    const primaryColor = fullColors["primary"].name;
+    const primaryColor = fullColors["primary"]?.name ?? "Color";
     const uniqueId = Object.values(fullColors)
       .map((color) => color.hex)
       .join(",");
-    NetworkMessages.CREATE_PALETTE.send({
+    const payload = {
       palette: {
         colors: Object.fromEntries(
           Object.entries(sortedFullColorsMap).map(([color, data]) => [
@@ -168,7 +168,9 @@ const ColorWheel = ({ className }: { className?: string }) => {
         keyAsLabel: true,
         addToStyles: true,
       },
-    });
+    };
+
+    NetworkMessages.CREATE_PALETTE.send(payload);
   };
 
   const handleImportToFigma = async () => {
